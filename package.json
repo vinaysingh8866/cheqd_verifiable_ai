@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Credo application with Next.js frontend and Express backend",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "install:backend": "cd backend && yarn install",
     "install:frontend": "cd credo-next-app && yarn install",
