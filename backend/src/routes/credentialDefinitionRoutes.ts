@@ -87,7 +87,7 @@ router.route('/')
               }
             }
           },
-
+          // @ts-ignore
           network: network,
 
           issuerId: schema.schema.issuerId

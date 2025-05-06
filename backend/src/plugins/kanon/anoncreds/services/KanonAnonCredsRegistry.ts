@@ -106,7 +106,7 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
         `${schema.issuerId}/resources/${schemaResource.id}`,
         {
           data: schemaResource,
-
+          // @ts-ignore 
           network: options.network,
           issuerId: schema.issuerId,
 
@@ -191,6 +191,7 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
         tag: credentialDefinition.tag,
       },
 
+      // @ts-ignore 
       network: options.network,
       issuerId: credentialDefinition.issuerId,
       version: uuid(),
