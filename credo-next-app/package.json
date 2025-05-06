@@ -1,0 +1,47 @@
+{
+  "name": "credo-next-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@credo-ts/anoncreds": "0.5.14",
+    "@credo-ts/askar": "0.5.14",
+    "@credo-ts/cheqd": "0.5.14",
+    "@credo-ts/core": "0.5.14",
+    "@credo-ts/didcomm": "^0.6.0-pr-2209-20250321171013",
+    "@credo-ts/node": "0.5.14",
+    "@credo-ts/tenants": "0.5.14",
+    "@headlessui/react": "^2.2.2",
+    "@hyperledger/anoncreds-nodejs": "^0.2.2",
+    "@hyperledger/aries-askar-nodejs": "^0.2.3",
+    "@hyperledger/indy-vdr-nodejs": "^0.2.2",
+    "next": "15.3.1",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-toastify": "^11.0.5",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "10.4.16",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "events": "^3.3.0",
+    "postcss": "8.4.31",
+    "process": "^0.11.10",
+    "querystring-es3": "^0.2.1",
+    "stream-browserify": "^3.0.0",
+    "tailwindcss": "3.3.3",
+    "typescript": "^5",
+    "url": "^0.11.4",
+    "util": "^0.12.5"
+  }
+}

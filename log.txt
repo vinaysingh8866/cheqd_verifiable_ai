@@ -1,0 +1,53 @@
+DEBUG: creating did cheqd
+[0] did {
+[0]   didDocumentMetadata: {},
+[0]   didRegistrationMetadata: {},
+[0]   didState: {
+[0]     state: 'finished',
+[0]     did: 'did:cheqd:testnet:1a862ec6-e5d5-43e6-8947-fbe720b14969',
+[0]     didDocument: DidDocument {
+[0]       context: [Array],
+[0]       id: 'did:cheqd:testnet:1a862ec6-e5d5-43e6-8947-fbe720b14969',
+[0]       controller: [Array],
+[0]       verificationMethod: [Array],
+[0]       authentication: [Array]
+[0]     },
+[0]     secret: { verificationMethod: [Object] }
+[0]   }
+[0] }
+[0] DEBUG: Error registering schema for did 'did:cheqd:testnet:1a862ec6-e5d5-43e6-8947-fbe720b14969' {
+[0]   "error": {
+[0]     "name": "CredoError",
+[0]     "message": "unknownError: Broadcasting transaction failed with code 13 (codespace: sdk). Log: insufficient fees; got: 2500000000ncheq required: 10000000000ncheq: insufficient fee",
+[0]     "stack": "CredoError: unknownError: Broadcasting transaction failed with code 13 (codespace: sdk). Log: insufficient fees; got: 2500000000ncheq required: 10000000000ncheq: insufficient fee\n    at CheqdAnonCredsRegistry.registerSchema (/Users/vinaysingh/Desktop/ajna/verifiable_ai/backend/node_modules/@credo-ts/cheqd/src/anoncreds/services/CheqdAnonCredsRegistry.ts:101:15)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at AnonCredsApi.registerSchema (/Users/vinaysingh/Desktop/ajna/verifiable_ai/backend/node_modules/@credo-ts/anoncreds/src/AnonCredsApi.ts:177:22)\n    at /Users/vinaysingh/Desktop/ajna/verifiable_ai/backend/src/routes/schemaRoutes.ts:139:34"
+[0]   },
+[0]   "did": "did:cheqd:testnet:1a862ec6-e5d5-43e6-8947-fbe720b14969",
+[0]   "schema": {
+[0]     "options": {
+[0]       "network": "testnet",
+[0]       "methodSpecificIdAlgo": "uuid"
+[0]     },
+[0]     "schema": {
+[0]       "attrNames": [
+[0]         "sd"
+[0]       ],
+[0]       "issuerId": "did:cheqd:testnet:1a862ec6-e5d5-43e6-8947-fbe720b14969",
+[0]       "name": "sd",
+[0]       "version": "1.0"
+[0]     }
+[0]   }
+[0] }
+[0] schemaResult {
+[0]   schemaMetadata: {},
+[0]   registrationMetadata: {},
+[0]   schemaState: {
+[0]     state: 'failed',
+[0]     schema: {
+[0]       attrNames: [Array],
+[0]       issuerId: 'did:cheqd:testnet:1a862ec6-e5d5-43e6-8947-fbe720b14969',
+[0]       name: 'sd',
+[0]       version: '1.0'
+[0]     },
+[0]     reason: 'unknownError: unknownError: Broadcasting transaction failed with code 13 (codespace: sdk). Log: insufficient fees; got: 2500000000ncheq required: 10000000000ncheq: insufficient fee'
+[0]   }
+[0] }

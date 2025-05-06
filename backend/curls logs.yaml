@@ -1,0 +1,18 @@
+ curl -L \
+  --request POST \
+  --url 'https://studio-api.cheqd.net/did/create/' \
+  --header 'x-api-key: caas_296a28ef1c240b52c24edc274aa7842ac4f2039bf1128cab436a137414b5280aa69f7332cdf85aff4f52fb1472bb038f21560456042aaac9d8b41a65c36e09e8' \
+  --header 'Content-Type: application/json' \
+  --data '{"network": "testnet","identifierFormatType": "uuid","assertionMethod": true,"verificationMethodType": "Ed25519VerificationKey2018"}'
+
+
+  {"did":"did:cheqd:testnet:95b33f88-6af0-4d5a-8585-ed95da7f58ac","keys":[{"kid":"23789c0e822f8576a7e9f80c5f19f83c37848174f2afba8f64bc6ada0952aa76","kms":"postgres","type":"Ed25519","publicKeyHex":"23789c0e822f8576a7e9f80c5f19f83c37848174f2afba8f64bc6ada0952aa76","meta":{"algorithms":["EdDSA","Ed25519"]},"controller":"did:cheqd:testnet:95b33f88-6af0-4d5a-8585-ed95da7f58ac"}],"services":[],"provider":"did:cheqd:testnet","controllerKeyRefs":["23789c0e822f8576a7e9f80c5f19f83c37848174f2afba8f64bc6ada0952aa76"],"controllerKeys":[{"kid":"23789c0e822f8576a7e9f80c5f19f83c37848174f2afba8f64bc6ada0952aa76","kms":"postgres","type":"Ed25519","publicKeyHex":"23789c0e822f8576a7e9f80c5f19f83c37848174f2afba8f64bc6ada0952aa76","meta":{"algorithms":["EdDSA","Ed25519"]},"controller":"did:cheqd:testnet:95b33f88-6af0-4d5a-8585-ed95da7f58ac"}],"controllerKeyId":"23789c0e822f8576a7e9f80c5f19f83c37848174f2afba8f64bc6ada0952aa76"}%
+
+  curl -L \
+  --request POST \
+  --url 'https://studio-api.cheqd.net/resource/create/did:cheqd:testnet:95b33f88-6af0-4d5a-8585-ed95da7f58ac' \
+  --header 'x-api-key: caas_296a28ef1c240b52c24edc274aa7842ac4f2039bf1128cab436a137414b5280aa69f7332cdf85aff4f52fb1472bb038f21560456042aaac9d8b41a65c36e09e8' \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data 'data=SGVsbG8gV29ybGQ=&encoding=base64url&name=ResourceName&type=TextDocument'
+
+  {"resource":{"resourceURI":"did:cheqd:testnet:95b33f88-6af0-4d5a-8585-ed95da7f58ac/resources/aa40a597-a1a1-4c69-9dba-ed082b4a2cea","resourceCollectionId":"95b33f88-6af0-4d5a-8585-ed95da7f58ac","resourceId":"aa40a597-a1a1-4c69-9dba-ed082b4a2cea","resourceName":"ResourceName","resourceType":"TextDocument","mediaType":"text/plain; charset=utf-8","resourceVersion":"","created":"2025-05-05T13:14:13Z","checksum":"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e","previousVersionId":null,"nextVersionId":null}}% 

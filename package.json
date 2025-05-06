@@ -1,0 +1,27 @@
+{
+  "name": "credo-app-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Credo application with Next.js frontend and Express backend",
+  "scripts": {
+    "install:backend": "cd backend && yarn install",
+    "install:frontend": "cd credo-next-app && yarn install",
+    "install:all": "yarn install:backend && yarn install:frontend",
+    "dev:backend": "cd backend && yarn dev",
+    "dev:frontend": "cd credo-next-app && yarn dev",
+    "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
+    "build:backend": "cd backend && yarn build",
+    "build:frontend": "cd credo-next-app && yarn build",
+    "build": "yarn build:backend && yarn build:frontend",
+    "start:backend": "cd backend && yarn start",
+    "start:frontend": "cd credo-next-app && yarn start",
+    "start": "concurrently \"yarn start:backend\" \"yarn start:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "packageManager": "yarn@3.3.1+sha512.e355f587284d06d2c0c1c2259c68746aa1f1f6cdeedefce543cec206709beeb7951c0a27cdbfb7b5736a576854829af9c660bbe82052192c49f108a546994b71",
+  "dependencies": {
+    "buffer": "^6.0.3"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "credo-express-backend",
+  "version": "1.0.0",
+  "description": "Express backend for Credo agent functionality",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@credo-ts/anoncreds": "0.5.14",
+    "@credo-ts/askar": "0.5.14",
+    "@credo-ts/cheqd": "0.5.14",
+    "@credo-ts/core": "0.5.14",
+    "@credo-ts/indy-vdr": "0.5.14",
+    "@credo-ts/node": "0.5.14",
+    "@credo-ts/tenants": "0.5.14",
+    "@hyperledger/anoncreds-nodejs": "^0.3.1",
+    "@hyperledger/anoncreds-shared": "^0.3.1",
+    "@hyperledger/aries-askar-nodejs": "^0.2.3",
+    "body-parser": "^2.2.0",
+    "buffer": "^6.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "ethers": "^6.13.7",
+    "express": "4.20.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/figlet": "^1.5.4",
+    "@types/indy-sdk": "^1.16.26",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.15.3",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  },
+  "resolutions": {
+    "@types/node": "18.18.8",
+    "undici": "^6.20.1",
+    "@cosmjs/amino": "npm:@cosmjs-rn/amino@^0.27.1",
+    "@cosmjs/encoding": "npm:@cosmjs-rn/encoding@^0.27.1",
+    "@cosmjs/math": "npm:@cosmjs-rn/math@^0.27.1",
+    "@cosmjs/stargate": "npm:@cosmjs-rn/stargate@^0.27.1",
+    "@cosmjs/tendermint-rpc": "npm:@cosmjs-rn/tendermint-rpc@^0.27.1",
+    "@cosmjs/utils": "npm:@cosmjs-rn/utils@^0.27.1",
+    "@cosmjs/proto-signing": "npm:@cosmjs-rn/proto-signing@^0.27.1",
+    "@cosmjs/crypto": "npm:@cosmjs-rn/crypto@^0.27.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

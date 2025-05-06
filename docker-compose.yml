@@ -1,0 +1,46 @@
+services:
+  # Express backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"  # Agent port
+      - "3002:3002"  # API port
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3002
+      - AGENT_PORT=3001
+      - NODE_ENV=production
+      - PYTHON=/usr/bin/python3
+      - ETHEREUM_RPC_URL=${ETHEREUM_RPC_URL}
+      - ETHEREUM_PRIVATE_KEY=${ETHEREUM_PRIVATE_KEY}
+      - MAIN_WALLET_ID=${MAIN_WALLET_ID:-main-wallet}
+      - MAIN_WALLET_KEY=${MAIN_WALLET_KEY:-main-wallet-key}
+    restart: unless-stopped
+    volumes:
+      - backend_data:/app/data
+
+  # Next.js frontend service
+  frontend:
+    build:
+      context: ./credo-next-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:3002
+      - NODE_ENV=production
+      - PYTHON=/usr/bin/python3
+
+volumes:
+  backend_data:
+
+networks:
+  default:
+    name: credo-network 
