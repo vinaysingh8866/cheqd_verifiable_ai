@@ -16,13 +16,13 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Simple validation
+
       if (!tenantId.trim()) {
         throw new Error('Tenant ID is required');
       }
 
       await login(tenantId);
-      // No need for navigation here - the Auth context will handle it
+
     } catch (error: any) {
       setError(error.message || 'Failed to login. Please check your tenant ID.');
     } finally {
@@ -30,7 +30,7 @@ export default function LoginPage() {
     }
   };
 
-  // For demo purposes - use a test tenant
+
   const useTestTenant = () => {
     setTenantId('demo-tenant-123');
   };

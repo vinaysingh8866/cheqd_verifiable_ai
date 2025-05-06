@@ -77,7 +77,7 @@ export default function CredentialDefinitionsPage() {
   const [supportRevocation, setSupportRevocation] = useState<boolean>(false);
   const [creating, setCreating] = useState<boolean>(false);
 
-  // For the details modal
+
   const [selectedCredDef, setSelectedCredDef] = useState<CredentialDefinition | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
   const [schemaDetails, setSchemaDetails] = useState<SchemaDetails | null>(null);
@@ -89,16 +89,16 @@ export default function CredentialDefinitionsPage() {
 
       setLoading(true);
       try {
-        // Fetch credential definitions
+
         const credDefResponse = await credentialDefinitionApi.getAll(tenantId);
         console.log(credDefResponse, "credDefResponse");
 
-        // Map and normalize the credential definition data structure
+
         let credDefs = credDefResponse.credentialDefinitions || [];
 
-        // Ensure all credential definitions have required properties
+
         credDefs = credDefs.map((cd: CredentialDefinitionResponse) => {
-          // Handle nested credential definition data
+
           if (cd.credentialDefinition) {
             return {
               id: cd.id || '',
@@ -113,22 +113,22 @@ export default function CredentialDefinitionsPage() {
             };
           }
 
-          // Otherwise return the object as is
+
           return cd as unknown as CredentialDefinition;
         });
 
         setCredentialDefinitions(credDefs);
 
-        // Fetch schemas for the dropdown
+
         const schemasResponse = await schemaApi.getAll(tenantId);
 
-        // Enhance schema data with additional details if available
+
         const enhancedSchemas = schemasResponse.schemas || [];
 
-        // For each schema, try to get its detailed information
+
         const enhancedSchemasPromises = enhancedSchemas.map(async (schema: any) => {
           try {
-            // Try to get detailed schema information - the API expects (tenantId, schemaId)
+
             const detailedSchema = await schemaApi.getById(schema.id, tenantId);
             console.log('Got detailed schema:', detailedSchema);
             
@@ -148,7 +148,7 @@ export default function CredentialDefinitionsPage() {
             console.warn(`Could not fetch details for schema ${schema.id}`, e);
           }
           
-          // If details fetch fails, use the existing schema object
+
           return {
             id: schema.id,
             name: schema.schema?.name || schema._tags?.schemaName || '',
@@ -184,7 +184,7 @@ export default function CredentialDefinitionsPage() {
     setIsDetailsOpen(true);
     console.log('credDef', credDef);
     
-    // Fetch schema details if we have a schemaId
+
     if (credDef.schemaId) {
       setLoadingSchema(true);
       try {
@@ -192,12 +192,12 @@ export default function CredentialDefinitionsPage() {
         console.log('Schema details response:', schemaResponse);
         
         if (schemaResponse) {
-          // Handle different response formats
+
           if (schemaResponse.schema) {
-            // Format 1: Success property with schema nested
+
             setSchemaDetails(schemaResponse.schema);
           } else if (schemaResponse.schemaId) {
-            // Format 2: Direct schema object
+
             setSchemaDetails(schemaResponse);
           } else {
             console.error('Unexpected schema response format', schemaResponse);
@@ -230,7 +230,7 @@ export default function CredentialDefinitionsPage() {
     setError(null);
 
     try {
-      // Extract the selected schema from the list
+
       const selectedSchema = schemas.find(s => s.id === selectedSchemaId);
       if (!selectedSchema) {
         throw new Error('Selected schema not found');
@@ -246,12 +246,12 @@ export default function CredentialDefinitionsPage() {
       const response = await credentialDefinitionApi.create(tenantId, selectedSchemaId, tag, supportRevocation);
       console.log('Created credential definition:', response);
 
-      // Reload credential definitions
+
       const credDefResponse = await credentialDefinitionApi.getAll(tenantId);
       console.log('Updated credential definitions:', credDefResponse);
       setCredentialDefinitions(credDefResponse.credentialDefinitions || []);
 
-      // Reset form
+
       setSelectedSchemaId('');
       setTag('');
       setSupportRevocation(false);
@@ -265,7 +265,7 @@ export default function CredentialDefinitionsPage() {
     }
   };
 
-  // Format a schema ID for display
+
   const formatSchemaName = (schemaId: string) => {
     if (!schemaId) return 'N/A';
 
@@ -411,7 +411,7 @@ export default function CredentialDefinitionsPage() {
                           const schema = schemas.find(s => s.id === selectedSchemaId);
                           if (!schema) return <p className="text-sm text-red-500">Schema not found</p>;
 
-                          // Log to help debug
+
                           console.log('Selected schema for CredDef:', schema);
                           
                           return (

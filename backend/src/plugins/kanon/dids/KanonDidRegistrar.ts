@@ -115,7 +115,7 @@ export class KanonDIDRegistrar implements DidRegistrar {
       const didRecord = await didRepository.findCreatedDid(agentContext, did);
       console.log(JSON.stringify(options), "options");
       
-      // Extract issuerDid from options.data if available
+
       let issuerId = options.issuerId;
       if (!issuerId && typeof options.data === 'object') {
         const data = options.data as any;
@@ -183,7 +183,7 @@ export class KanonDIDRegistrar implements DidRegistrar {
         options.issuerId,
         options.network
       );
-      // check if error in response
+
       if (response.status === 1) {
         return {
           credentialDefinitionMetadata: {},
@@ -323,7 +323,7 @@ export type TVerificationKey<
   N extends number
 > = `${K}-${N}`;
 
-// did:canon:<network>:<address>:<version>:
+
 export interface KanonCreateResourceOptions
   extends Omit<Partial<MsgCreateResourcePayload>, "data"> {
   data: string | Uint8Array | object;

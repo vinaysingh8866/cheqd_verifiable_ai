@@ -1,7 +1,7 @@
-// Base URL for the API
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
-// Dashboard stats interface
+
 export interface DashboardStats {
   connections: {
     total: number;
@@ -21,7 +21,7 @@ export interface DashboardStats {
   };
 }
 
-// Type for the options parameter
+
 type ApiOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
@@ -30,7 +30,7 @@ type ApiOptions = {
   credentials?: RequestCredentials;
 };
 
-// Default options
+
 const defaultOptions: ApiOptions = {
   method: 'GET',
   headers: {
@@ -46,7 +46,7 @@ const defaultOptions: ApiOptions = {
  * @returns The response data
  */
 export async function fetchAPI<T>(url: string, options: ApiOptions = {}): Promise<T> {
-  // add no cors
+
   const mergedOptions: RequestInit = {
     ...defaultOptions,
     ...options,
@@ -57,14 +57,14 @@ export async function fetchAPI<T>(url: string, options: ApiOptions = {}): Promis
     },
   };
 
-  // Convert body to JSON string if it's an object
+
   if (options.body && typeof options.body === 'object') {
     mergedOptions.body = JSON.stringify(options.body);
   }
 
   const response = await fetch(url, mergedOptions);
 
-  // If response is not ok, throw an error
+
   if (!response.ok) {
     let errorMessage = `API request failed: ${response.status} ${response.statusText}`;
     
@@ -72,13 +72,13 @@ export async function fetchAPI<T>(url: string, options: ApiOptions = {}): Promis
       const errorData = await response.json();
       errorMessage = errorData.error || errorData.message || errorMessage;
     } catch (e) {
-      // If parsing JSON fails, just use the default error message
+
     }
     
     throw new Error(errorMessage);
   }
 
-  // Return the data
+
   return response.json();
 }
 

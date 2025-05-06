@@ -51,7 +51,7 @@ router.route('/')
 
       const agent = await getAgent({ tenantId });
       agent.modules
-      // First, get the schema details to extract the issuer DID
+
       try {
         const schemaResult = await agent.modules.anoncreds.getCreatedSchemas({});
         const schema = schemaResult.find((schema: { id: any; }) => schema.id === schemaId);
@@ -66,11 +66,11 @@ router.route('/')
         
         console.log('Using schema for credential definition:', schema);
         
-        // Extract network info from the schema ID (assuming format like did:kanon:testnet:xyz)
+
         const schemaIdParts = schemaId.split(':');
         const network = schemaIdParts.length >= 3 ? schemaIdParts[2] : 'testnet';
         
-        // @ts-ignore - Adding network property required by implementation even if not in type definition
+
         const options: RegisterCredentialDefinitionOptions = {
           options: {
             network: network,
@@ -87,9 +87,9 @@ router.route('/')
               }
             }
           },
-          // @ts-ignore - Adding network property required by implementation even if not in type definition
+
           network: network,
-          // @ts-ignore - Adding issuerId property required by implementation even if not in type definition
+
           issuerId: schema.schema.issuerId
         };
         

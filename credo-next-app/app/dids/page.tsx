@@ -54,11 +54,11 @@ export default function DidsPage() {
     try {
       await didApi.create(tenantId, didMethod);
       
-      // Reload DIDs
+
       const response = await didApi.getAll(tenantId);
       setDids(response.dids || []);
       
-      // Reset form
+
       setDidMethod('cheqd');
       
       closeModal();

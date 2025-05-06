@@ -2,7 +2,7 @@
  * API client for communicating with the Express backend
  */
 
-// Base URL for the API
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 /**
@@ -28,7 +28,7 @@ async function fetchWithErrorHandling(url: string, options: RequestInit = {}) {
  * Auth API functions
  */
 export const authApi = {
-  // Register a new tenant
+
   register: async (label: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
@@ -37,7 +37,7 @@ export const authApi = {
     });
   },
   
-  // Login with tenant ID
+
   login: async (tenantId: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
@@ -64,7 +64,7 @@ export const dashboardApi = {
  * Agent API functions
  */
 export const agentApi = {
-  // Initialize or get an agent
+
   initialize: async (walletId: string, walletKey: string, tenantId?: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/agent/initialize`, {
       method: 'POST',
@@ -73,7 +73,7 @@ export const agentApi = {
     });
   },
   
-  // Validate wallet credentials
+
   validate: async (walletId: string, walletKey: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/agent/validate`, {
       method: 'POST',
@@ -82,7 +82,7 @@ export const agentApi = {
     });
   },
   
-  // Create a tenant
+
   createTenant: async (walletId: string, walletKey: string, label: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/agent/tenant`, {
       method: 'POST',
@@ -96,7 +96,7 @@ export const agentApi = {
  * Connection API functions
  */
 export const connectionApi = {
-  // Get all connections
+
   getAll: async (walletId: string, walletKey: string, tenantId?: string) => {
     const params = new URLSearchParams({
       walletId,
@@ -107,7 +107,7 @@ export const connectionApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections?${params.toString()}`);
   },
   
-  // Get a connection by ID
+
   getById: async (connectionId: string, walletId: string, walletKey: string, tenantId?: string) => {
     const params = new URLSearchParams({
       walletId,
@@ -118,7 +118,7 @@ export const connectionApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections/${connectionId}?${params.toString()}`);
   },
   
-  // Create a new invitation
+
   createInvitation: async (walletId: string, walletKey: string, tenantId?: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections/invitation`, {
       method: 'POST',
@@ -127,7 +127,7 @@ export const connectionApi = {
     });
   },
   
-  // Receive an invitation from URL
+
   receiveInvitation: async (walletId: string, walletKey: string, invitationUrl: string, tenantId?: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections/receive-invitation`, {
       method: 'POST',
@@ -141,7 +141,7 @@ export const connectionApi = {
  * Credential API functions
  */
 export const credentialApi = {
-  // Get all credentials
+
   getAll: async (walletId: string, walletKey: string, tenantId?: string) => {
     const params = new URLSearchParams({
       walletId,
@@ -152,7 +152,7 @@ export const credentialApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/credentials?${params.toString()}`);
   },
   
-  // Get a credential by ID
+
   getById: async (credentialId: string, walletId: string, walletKey: string, tenantId?: string) => {
     const params = new URLSearchParams({
       walletId,
@@ -168,7 +168,7 @@ export const credentialApi = {
  * Schema API functions
  */
 export const schemaApi = {
-  // Get all schemas
+
   getAll: async (tenantId: string) => {
     const params = new URLSearchParams({
       tenantId
@@ -177,7 +177,7 @@ export const schemaApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/schemas?${params.toString()}`);
   },
   
-  // Get a schema by ID
+
   getById: async (schemaId: string, tenantId: string) => {
     const params = new URLSearchParams({
       tenantId
@@ -186,7 +186,7 @@ export const schemaApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/schemas/${schemaId}?${params.toString()}`);
   },
   
-  // Get a schema by Schema ID (different from internal ID)
+
   getBySchemaId: async (schemaId: string, tenantId: string) => {
     const params = new URLSearchParams({
       tenantId,
@@ -195,7 +195,7 @@ export const schemaApi = {
     
     return fetchWithErrorHandling(`${API_BASE_URL}/api/schemas/schemaId?${params.toString()}`);
   },
-  // Create a new schema
+
   create: async (tenantId: string, name: string, version: string, attributes: string[], provider: string = 'cheqd') => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/schemas`, {
       method: 'POST',
@@ -209,7 +209,7 @@ export const schemaApi = {
  * Credential Definition API functions
  */
 export const credentialDefinitionApi = {
-  // Get all credential definitions
+
   getAll: async (tenantId: string) => {
     const params = new URLSearchParams({
       tenantId
@@ -218,7 +218,7 @@ export const credentialDefinitionApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/credential-definitions?${params.toString()}`);
   },
   
-  // Get a credential definition by ID
+
   getById: async (credDefId: string, tenantId: string) => {
     const params = new URLSearchParams({
       tenantId
@@ -227,7 +227,7 @@ export const credentialDefinitionApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/credential-definitions/${credDefId}?${params.toString()}`);
   },
   
-  // Create a new credential definition
+
   create: async (tenantId: string, schemaId: string, tag: string, supportRevocation: boolean = false) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/credential-definitions`, {
       method: 'POST',
@@ -241,7 +241,7 @@ export const credentialDefinitionApi = {
  * DID API functions
  */
 export const didApi = {
-  // Get all DIDs
+
   getAll: async (tenantId: string) => {
     const params = new URLSearchParams({
       tenantId
@@ -250,7 +250,7 @@ export const didApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/dids?${params.toString()}`);
   },
   
-  // Create a new DID
+
   create: async (tenantId: string, method: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/dids`, {
       method: 'POST',

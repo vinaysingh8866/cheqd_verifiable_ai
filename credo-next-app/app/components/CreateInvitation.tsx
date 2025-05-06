@@ -21,7 +21,7 @@ export default function CreateInvitation({ tenantId }: CreateInvitationProps) {
   const [showQR, setShowQR] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
 
-  // For Express backend, we need wallet ID and key
+
   const MAIN_WALLET_ID = process.env.MAIN_WALLET_ID || 'credo-main-wallet';
   const MAIN_WALLET_KEY = process.env.MAIN_WALLET_KEY || 'credo-main-wallet-key';
 
@@ -41,7 +41,7 @@ export default function CreateInvitation({ tenantId }: CreateInvitationProps) {
         setInvitation(result.invitation);
         setShowQR(true);
         
-        // Log the invitation for debugging
+
         console.log('Created invitation:', result);
       } else {
         throw new Error(result.message || 'Failed to create invitation');

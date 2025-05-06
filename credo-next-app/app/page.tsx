@@ -33,7 +33,7 @@ export default function DashboardPage() {
     
     getStats();
     
-    // Refresh stats every minute
+
     const intervalId = setInterval(getStats, 60000);
     
     return () => clearInterval(intervalId);

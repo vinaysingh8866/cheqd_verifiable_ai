@@ -26,7 +26,7 @@ router.route('/')
         const agent = await getAgent({ tenantId });
         const dids = await agent.dids.getCreatedDids({});
 
-        // Format the DIDs for frontend consumption
+
         const formattedDids = dids.map(did => ({
             did: did.did,
             method: did.did.split(':')[1], // Extract method from did:method:...
@@ -74,7 +74,7 @@ router.route('/')
                 
             };
         } else {
-            // Default to cheqd
+
             didOptions = {
                 method: 'cheqd',
                 secret: {

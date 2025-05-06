@@ -6,7 +6,7 @@ import { getConnections, createInvitation, receiveInvitation, sendMessage, getMe
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 
-// Define the connection type based on the backend response
+
 interface Connection {
   id: string;
   createdAt: string;
@@ -21,14 +21,14 @@ interface Connection {
   autoAcceptConnection?: boolean;
 }
 
-// Define invitation type
+
 interface Invitation {
   id: string;
   url: string;
   outOfBandInvitation: any;
 }
 
-// Define message type
+
 interface Message {
   id: string;
   connectionId: string;
@@ -40,7 +40,7 @@ interface Message {
   updatedAt: string;
 }
 
-// Define API response type
+
 interface ConnectionsResponse {
   success: boolean;
   connections?: Connection[];
@@ -88,7 +88,7 @@ export default function ConnectionsPage() {
   const [isAcceptingInvitation, setIsAcceptingInvitation] = useState(false);
   const [acceptSuccess, setAcceptSuccess] = useState<string | null>(null);
   
-  // Messaging state
+
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -96,8 +96,8 @@ export default function ConnectionsPage() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
 
-  // Get wallet credentials - in a real app, these would come from secure storage
-  // This is simplistic for demo purposes - in production, use proper secret management
+
+
   const walletId = `${tenantId}`;
   const walletKey = `${tenantId}`;
 
@@ -130,13 +130,13 @@ export default function ConnectionsPage() {
     
     fetchConnections();
     
-    // Refresh connections every 30 seconds
+
     const intervalId = setInterval(fetchConnections, 30000);
     
     return () => clearInterval(intervalId);
   }, [tenantId, walletId, walletKey]);
 
-  // Function to handle creating a new invitation
+
   const handleCreateInvitation = async () => {
     if (!tenantId) return;
     
@@ -161,7 +161,7 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Function to copy invitation URL to clipboard
+
   const copyInvitationUrl = () => {
     if (invitation?.url) {
       navigator.clipboard.writeText(invitation.url)
@@ -175,19 +175,19 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Function to toggle between QR code and URL display
+
   const toggleDisplayMode = () => {
     setDisplayQrCode(!displayQrCode);
   };
 
-  // Function to show QR code modal for specific connection
+
   const showQrCodeForConnection = (connection: Connection) => {
     console.log('Showing QR for connection:', connection);
     setSelectedConnectionId(connection.id);
     setShowQrModal(true);
   };
 
-  // Function to handle accepting an invitation
+
   const handleAcceptInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -205,7 +205,7 @@ export default function ConnectionsPage() {
         setAcceptSuccess(`Successfully accepted invitation from ${response.connection.theirLabel || 'unknown'}`);
         setInvitationUrl('');
         
-        // Refresh connections list
+
         const connectionsResponse = await getConnections(tenantId) as ConnectionsResponse;
         if (connectionsResponse.success) {
           const allConnections = [
@@ -225,7 +225,7 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Function to open message modal and load messages
+
   const openMessageModal = async (connection: Connection) => {
     if (!tenantId) return;
     
@@ -234,7 +234,7 @@ export default function ConnectionsPage() {
     setMessages([]);
     setNewMessage('');
     
-    // Only allow messaging for completed connections
+
     if (connection.state !== 'completed') {
       return;
     }
@@ -245,7 +245,7 @@ export default function ConnectionsPage() {
       const response = await getMessages(connection.id, tenantId) as MessagesResponse;
       
       if (response.success) {
-        // Sort messages by sentTime or createdAt in chronological order
+
         const sortedMessages = [...(response.messages || [])].sort((a, b) => {
           return parseTimestamp(a) - parseTimestamp(b); // Ascending order (oldest first)
         });
@@ -261,7 +261,7 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Function to send a message
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -273,10 +273,10 @@ export default function ConnectionsPage() {
       const response = await sendMessage(selectedConnection.id, newMessage, tenantId) as { success: boolean; message?: string };
       
       if (response.success) {
-        // Refresh messages
+
         const messagesResponse = await getMessages(selectedConnection.id, tenantId) as MessagesResponse;
         if (messagesResponse.success) {
-          // Sort messages by sentTime or createdAt
+
           const sortedMessages = [...(messagesResponse.messages || [])].sort((a, b) => {
             return parseTimestamp(a) - parseTimestamp(b); // Ascending order (oldest first)
           });
@@ -294,7 +294,7 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Function to get appropriate badge color for connection state
+
   const getStateBadgeColor = (state: string) => {
     switch (state.toLowerCase()) {
       case 'complete':
@@ -312,26 +312,26 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Format date for messages
+
   const formatMessageDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString();
   };
 
-  // Parse timestamp safely
+
   const parseTimestamp = (message: Message): number => {
     try {
-      // Try sentTime first, then createdAt
+
       const timestamp = message.sentTime || message.createdAt;
       return new Date(timestamp).getTime();
     } catch (error) {
       console.error('Error parsing timestamp:', error);
-      // Return a fallback timestamp (current time)
+
       return Date.now();
     }
   };
 
-  // Determine if a message is from me or them
+
   const isMessageFromMe = (message: Message) => {
     return message.role === 'sender';
   };
@@ -565,7 +565,7 @@ export default function ConnectionsPage() {
                       {/* Display messages sorted by time */}
                       {[...messages]
                         .sort((a, b) => {
-                          // Ensure proper chronological sorting
+
                           return parseTimestamp(a) - parseTimestamp(b); // Ascending order (oldest first)
                         })
                         .map((msg, index) => (

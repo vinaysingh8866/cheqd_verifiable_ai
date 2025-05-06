@@ -39,9 +39,9 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
       console.log(schemaId);
       const parsedDid = parsekanonDid(schemaId);
       console.log(parsedDid);
-      //   if (!parsedDid) {
-      //     throw new Error(`Invalid schemaId: ${schemaId}`);
-      //   }
+
+
+
       const response = await kanonDidResolver.resolveResource(
         agentContext,
         schemaId
@@ -106,7 +106,7 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
         `${schema.issuerId}/resources/${schemaResource.id}`,
         {
           data: schemaResource,
-          // @ts-ignore
+
           network: options.network,
           issuerId: schema.issuerId,
 
@@ -152,7 +152,7 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
     agentContext: AgentContext,
     credentialDefinitionId: string
   ): Promise<GetCredentialDefinitionReturn> {
-    // throw new Error("Method not implemented.");
+
     const ledgerService = agentContext.dependencyManager.resolve(
       EthereumLedgerService
     );
@@ -190,7 +190,7 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
         issuerId: credentialDefinition.issuerId,
         tag: credentialDefinition.tag,
       },
-      // @ts-ignore
+
       network: options.network,
       issuerId: credentialDefinition.issuerId,
       version: uuid(),

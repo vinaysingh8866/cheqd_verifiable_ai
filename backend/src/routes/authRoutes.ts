@@ -3,7 +3,7 @@ import { getAgent, createTenant,  getMainAgent } from '../services/agentService'
 
 const router = Router();
 
-// Main agent wallet info - this will be the parent for all tenants
+
 const MAIN_WALLET_ID = process.env.MAIN_WALLET_ID || 'credo-main-wallet';
 const MAIN_WALLET_KEY = process.env.MAIN_WALLET_KEY || 'credo-main-wallet-key';
 
@@ -16,7 +16,7 @@ router.route('/register')
       console.log('Received tenant registration request');
       const { label } = req.body;
 
-      // Basic validation
+
       if (!label) {
         res.status(400).json({
           success: false,
@@ -28,12 +28,12 @@ router.route('/register')
       console.log(`Processing tenant registration for label: ${label}`);
 
       try {
-        // Create a new tenant
+
         const tenantRecord = await createTenant({ label });
         
         console.log(`Created new tenant with ID: ${tenantRecord.id}`);
         
-        // Return success response with tenant info
+
         res.status(201).json({
           success: true,
           message: 'Tenant registration successful',
@@ -66,7 +66,7 @@ router.route('/login')
       console.log('Received tenant login request');
       const { tenantId } = req.body;
 
-      // Basic validation
+
       if (!tenantId) {
         res.status(400).json({
           success: false,
@@ -78,10 +78,10 @@ router.route('/login')
       console.log(`Processing login for tenant ID: ${tenantId}`);
 
       try {
-        // Get the main agent
+
         const mainAgent = await getMainAgent();
         
-        // Verify the tenant exists by trying to get it
+
         const tenantRecord = await mainAgent.modules.tenants.getTenantById(tenantId);
         
         if (!tenantRecord) {
@@ -92,14 +92,14 @@ router.route('/login')
           return;
         }
         
-        // Get the tenant agent
+
         await mainAgent.modules.tenants.getTenantAgent({
           tenantId
         });
         
         console.log(`Tenant login successful for ID: ${tenantId}`);
         
-        // Return success response with tenant info
+
         res.status(200).json({
           success: true,
           message: 'Login successful',
@@ -109,7 +109,7 @@ router.route('/login')
       } catch (error: any) {
         console.error('Tenant login error:', error);
         
-        // If tenant not found, return appropriate error
+
         if (error.message?.includes('not found')) {
           res.status(404).json({
             success: false,

@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    // The appDir flag is no longer needed - Next.js App Router is stable now
+
   },
   serverExternalPackages: [
     "@hyperledger/aries-askar-nodejs",
@@ -22,7 +22,7 @@ const nextConfig = {
   ],
   transpilePackages: ['@tailwindcss/postcss'],
   webpack: (config, { isServer, webpack }) => {
-    // This is necessary to handle native Node.js modules
+
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
@@ -43,14 +43,14 @@ const nextConfig = {
     };
     
     if (!isServer) {
-      // Add polyfills when running on the client
+
       config.resolve.fallback = {
         ...config.resolve.fallback,
         process: require.resolve('process/browser'),
       };
     }
     
-    // Add the Buffer polyfill
+
     if (webpack && webpack.ProvidePlugin) {
       config.plugins.push(
         new webpack.ProvidePlugin({

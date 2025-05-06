@@ -4,23 +4,23 @@ import { DidDocument } from "@credo-ts/core";
 export function validateSpecCompliantPayload(
   didDocument: DidDocument
 ): SpecValidationResult {
-  // id is required, validated on both compile and runtime
+
   if (!didDocument.id && !didDocument.id.startsWith("did:cheqd:"))
     return { valid: false, error: "id is required" };
 
-  // verificationMethod is required
+
   if (!didDocument.verificationMethod)
     return { valid: false, error: "verificationMethod is required" };
 
-  // verificationMethod must be an array
+
   if (!Array.isArray(didDocument.verificationMethod))
     return { valid: false, error: "verificationMethod must be an array" };
 
-  // verificationMethod must be not be empty
+
   if (!didDocument.verificationMethod.length)
     return { valid: false, error: "verificationMethod must be not be empty" };
 
-  // verificationMethod types must be supported
+
   const isValidVerificationMethod = didDocument.verificationMethod.every(
     (vm) => {
       switch (vm.type) {

@@ -50,7 +50,7 @@ export default function SchemasPage() {
       try {
         const response = await schemaApi.getAll(tenantId);
         console.log('response', response);
-        // The API now returns an array of schemas directly
+
         setSchemas(Array.isArray(response) ? response : (response.schemas || []));
         setError(null);
       } catch (err: any) {
@@ -109,12 +109,12 @@ export default function SchemasPage() {
     try {
       await schemaApi.create(tenantId, schemaName, schemaVersion, filteredAttributes, provider);
       
-      // Reload schemas
+
       const response = await schemaApi.getAll(tenantId);
-      // The API now returns an array of schemas directly
+
       setSchemas(Array.isArray(response) ? response : (response.schemas || []));
       
-      // Reset form
+
       setSchemaName('');
       setSchemaVersion('1.0');
       setAttributes(['']);

@@ -49,7 +49,7 @@ export class EthereumLedgerService {
   }> {
     console.log("Getting provider and signer for network:", networkName);
     try {
-      // Default to the first network if the specified one is not found
+
       const network = this.networks.find((n) => n.network === networkName) || this.networks[0];
       if (!network) {
         throw new Error(`No network configuration available. Please check your configuration.`);
@@ -58,7 +58,7 @@ export class EthereumLedgerService {
       console.log(`Using network: ${network.network}, provider: ${network.providerUrl}`);
       const provider = new ethers.JsonRpcProvider(network.providerUrl);
       
-      // Ensure provider is connected
+
       await provider.getBlockNumber().catch(error => {
         console.error("Provider connection failed:", error);
         throw new Error(`Failed to connect to provider at ${network.providerUrl}: ${error.message}`);
@@ -159,21 +159,21 @@ export class EthereumLedgerService {
     try {
       const { provider } = await this.getProviderAndSigner(networkName);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function getDID(string) view returns (string, string)"
       ]);
       
-      // Encode function data for call
+
       const data = iface.encodeFunctionData("getDID", [did]);
       
-      // Call contract directly
+
       const result = await provider.call({
         to: this.contractAddress,
         data: data
       });
       
-      // Decode the result
+
       const decoded = iface.decodeFunctionResult("getDID", result);
       return decoded;
     } catch (error: any) {
@@ -187,21 +187,21 @@ export class EthereumLedgerService {
     try {
       const { provider } = await this.getProviderAndSigner(networkName);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function getSchema(string) view returns (string, address[])"
       ]);
       
-      // Encode function data for call
+
       const data = iface.encodeFunctionData("getSchema", [schemaId]);
       
-      // Call contract directly
+
       const result = await provider.call({
         to: this.contractAddress,
         data: data
       });
       
-      // Decode the result
+
       const decoded = iface.decodeFunctionResult("getSchema", result);
       const response = decoded;
       console.log(response, "response");
@@ -251,7 +251,7 @@ export class EthereumLedgerService {
     const { signer } = await this.getProviderAndSigner(networkName);
     
     try {
-      // Validate inputs to prevent null values
+
       if (!schemaId) throw new Error("schemaId cannot be null or empty");
       if (!details) throw new Error("details cannot be null or empty");
       if (!issuerId) throw new Error("issuerId cannot be null or empty");
@@ -262,19 +262,19 @@ export class EthereumLedgerService {
         issuerId
       });
       
-      // Create contract instance with simplified ABI
+
       const iface = new ethers.Interface([
         "function registerSchema(string,string,string)"
       ]);
       
-      // Encode function data manually
+
       const data = iface.encodeFunctionData("registerSchema", [
         schemaId,
         details,
         issuerId
       ]);
       
-      // Send transaction directly without using contract abstraction
+
       const tx = await signer.sendTransaction({
         to: this.contractAddress,
         data: data
@@ -305,18 +305,18 @@ export class EthereumLedgerService {
     try {
       console.log("Adding approved issuer", schemaId, issuer);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function addApprovedIssuer(string,address)"
       ]);
       
-      // Encode function data manually
+
       const data = iface.encodeFunctionData("addApprovedIssuer", [
         schemaId,
         issuer
       ]);
       
-      // Send transaction directly
+
       const tx = await signer.sendTransaction({
         to: this.contractAddress,
         data: data
@@ -346,7 +346,7 @@ export class EthereumLedgerService {
     const { signer } = await this.getProviderAndSigner(networkName);
     
     try {
-      // Validate inputs to prevent null values
+
       if (!credDefId) throw new Error("credDefId cannot be null or empty");
       if (!schemaId) throw new Error("schemaId cannot be null or empty");
       if (!issuer) throw new Error("issuer cannot be null or empty");
@@ -357,19 +357,19 @@ export class EthereumLedgerService {
         issuer
       });
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function registerCredentialDefinition(string,string,string)"
       ]);
       
-      // Encode function data manually
+
       const data = iface.encodeFunctionData("registerCredentialDefinition", [
         credDefId,
         schemaId,
         issuer
       ]);
       
-      // Send transaction directly
+
       const tx = await signer.sendTransaction({
         to: this.contractAddress,
         data: data
@@ -398,21 +398,21 @@ export class EthereumLedgerService {
     try {
       const { provider } = await this.getProviderAndSigner(networkName);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function getCredentialDefinition(string) view returns (string, string)"
       ]);
       
-      // Encode function data for call
+
       const data = iface.encodeFunctionData("getCredentialDefinition", [credDefId]);
       
-      // Call contract directly
+
       const result = await provider.call({
         to: this.contractAddress,
         data: data
       });
       
-      // Decode the result
+
       return iface.decodeFunctionResult("getCredentialDefinition", result);
     } catch (error: any) {
       console.error("Failed to get credential definition:", error);
@@ -453,15 +453,15 @@ export class EthereumLedgerService {
     try {
       console.log("Revoking credential", credId);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function revokeCredential(string)"
       ]);
       
-      // Encode function data manually
+
       const data = iface.encodeFunctionData("revokeCredential", [credId]);
       
-      // Send transaction directly
+
       const tx = await signer.sendTransaction({
         to: this.contractAddress,
         data: data
@@ -486,21 +486,21 @@ export class EthereumLedgerService {
     try {
       const { provider } = await this.getProviderAndSigner(networkName);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function isCredentialRevoked(string) view returns (bool)"
       ]);
       
-      // Encode function data for call
+
       const data = iface.encodeFunctionData("isCredentialRevoked", [credId]);
       
-      // Call contract directly
+
       const result = await provider.call({
         to: this.contractAddress,
         data: data
       });
       
-      // Decode the result
+
       const decoded = iface.decodeFunctionResult("isCredentialRevoked", result);
       return decoded[0];
     } catch (error: any) {
@@ -520,19 +520,19 @@ export class EthereumLedgerService {
     try {
       console.log("Registering DID", did, context);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function registerDID(string,string,string)"
       ]);
       
-      // Encode function data manually
+
       const data = iface.encodeFunctionData("registerDID", [
         did,
         context,
         metadata
       ]);
       
-      // Send transaction directly
+
       const tx = await signer.sendTransaction({
         to: this.contractAddress,
         data: data
@@ -564,19 +564,19 @@ export class EthereumLedgerService {
     try {
       console.log("Updating DID", did, context);
       
-      // Create interface for the function
+
       const iface = new ethers.Interface([
         "function updateDID(string,string,string)"
       ]);
       
-      // Encode function data manually
+
       const data = iface.encodeFunctionData("updateDID", [
         did,
         context,
         metadata
       ]);
       
-      // Send transaction directly
+
       const tx = await signer.sendTransaction({
         to: this.contractAddress,
         data: data

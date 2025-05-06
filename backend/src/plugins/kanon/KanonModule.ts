@@ -22,6 +22,6 @@ export class EthereumModule implements Module {
     const ethereumLedgerService = agentContext.dependencyManager.resolve(
       EthereumLedgerService
     );
-    // await ethereumLedgerService.connect();
+
   }
 }

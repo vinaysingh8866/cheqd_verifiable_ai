@@ -204,7 +204,7 @@ export async function getMainAgent(): Promise<Agent> {
 export async function createTenant(config: { label: string }): Promise<any> {
     if (!mainAgent || !mainAgent.isInitialized) {
         console.log(`Initializing main agent for tenant creation`);
-        // Initialize the agent
+
         await initializeAgent(
             process.env.MAIN_WALLET_ID || 'main-wallet',
             process.env.MAIN_WALLET_KEY || 'main-wallet-key'
@@ -217,8 +217,8 @@ export async function createTenant(config: { label: string }): Promise<any> {
 
     const tenant = await mainAgent.modules.tenants.createTenant({ config });
 
-    // Make sure we clear the cache for this tenant ID if it exists
-    // (in case we're recreating a tenant)
+
+
     if (tenant && tenant.tenantId && tenantAgentCache[tenant.tenantId]) {
         delete tenantAgentCache[tenant.tenantId];
         console.log(`Cleared cached tenant agent for recreated tenant: ${tenant.tenantId}`);
@@ -244,7 +244,7 @@ export async function validateCredentials(tenantId: string): Promise<boolean> {
  * Initialize the agent system - should be called once when the Express server starts
  */
 export async function initializeAgentSystem(): Promise<void> {
-    // If there's a default admin wallet configured, initialize it at startup
+
     if (mainAgent) {
         return;
     }
@@ -260,7 +260,7 @@ export async function initializeAgentSystem(): Promise<void> {
             console.error('Failed to initialize default admin agent:', error);
         }
     } else {
-        // Initialize with default values if no specific wallet is configured
+
         try {
             console.log('Initializing default main agent...');
             await initializeAgent('main-wallet', 'main-wallet-key');

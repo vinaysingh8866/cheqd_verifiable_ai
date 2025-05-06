@@ -26,9 +26,9 @@ router.route('/')
         }
 
         const agent = await getAgent({ tenantId });
-        // console.log('agent', agent.modules.anoncreds);
+
         const schemas = await agent.modules.anoncreds.getCreatedSchemas({});
-        // console.log('schemas', schemas);
+
         res.status(200).json({
             success: true,
             schemas
@@ -54,18 +54,18 @@ router.route('/')
         }
 
         const agent = await getAgent({ tenantId });
-        // console.log('agent', agent.modules.dids);
+
         
         try {
-            // check if the did already exists
+
             const dids = await agent.dids.getCreatedDids({});
             
-            // Create schema options based on provider
+
             let schemaOptions: any;
             let issuerDid = '';
-            // If we have created DIDs, try to use one of those
+
             if (dids && dids.length > 0) {
-                // Look for a DID matching the selected provider
+
                 const matchingDid = dids.find(did => 
                     (provider === 'cheqd' && did.did.startsWith('did:cheqd')) ||
                     (provider === 'kanon' && did.did.startsWith('did:kanon'))
@@ -77,7 +77,7 @@ router.route('/')
             }
             console.log(provider, "provider", issuerDid, "issuerDid", attributes, "attributes", name, "name", version, "version");
             if (provider === 'kanon') {
-                // @ts-ignore - Ignore all type errors for this object assignment
+
                 schemaOptions = {
                     network: "testnet", // Add the missing network property
                     options: {
@@ -93,8 +93,8 @@ router.route('/')
                     }
                 };
             } else {
-                // Default to cheqd provider
-                // @ts-ignore - Ignore all type errors for this object assignment
+
+
                 schemaOptions = {
                     network: "testnet", // Add the missing network property
                     options: {

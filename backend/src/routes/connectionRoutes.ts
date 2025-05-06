@@ -4,7 +4,7 @@ import { ConnectionRecord } from '@credo-ts/core';
 
 const router = Router();
 
-// Store messages in memory (in a real app, you would use a database)
+
 interface Message {
   connectionId: string;
   content: string;
@@ -140,10 +140,10 @@ router.route('/invitation')
 
       const agent = await getAgent({ tenantId });
       
-      // Create out of band invitation
+
       const { outOfBandInvitation } = await agent.oob.createInvitation();
       
-      // Generate invitation URL
+
       const invitationUrl = outOfBandInvitation.toUrl({ domain: agent.config.endpoints[0] });
       
       res.status(200).json({
@@ -181,7 +181,7 @@ router.route('/receive-invitation')
 
       const agent = await getAgent({ tenantId });
       
-      // Receive the invitation URL
+
       const { connectionRecord } = await agent.oob.receiveInvitationFromUrl(invitationUrl);
       
       if (!connectionRecord) {
@@ -229,7 +229,7 @@ router.route('/message')
 
       const agent = await getAgent({ tenantId });
       
-      // Get the connection
+
       const connection = await agent.connections.findById(connectionId);
       
       if (!connection) {
@@ -240,10 +240,10 @@ router.route('/message')
         return;
       }
       
-      // Send a basic message
+
       await agent.basicMessages.sendMessage(connection.id, message);
       console.log(`Message sent to connection ${connectionId}: ${message}`);
-      // Store the message in our in-memory store
+
       if (!messages[connectionId]) {
         messages[connectionId] = [];
       }
@@ -289,7 +289,7 @@ router.route('/messages/:connectionId')
       
       const agent = await getAgent({ tenantId });
       
-      // Get the connection to verify it exists
+
       const connection = await agent.connections.findById(connectionId);
       console.log(`Connection: ${JSON.stringify(connection)}`);
       if (!connection) {
@@ -325,8 +325,8 @@ router.route('/messages/:connectionId')
     }
   });
 
-// Setup message webhook to receive messages from connections
-// This would typically be registered when the server starts
-// For now, we'll just mock receiving messages 
+
+
+
 
 export default router; 

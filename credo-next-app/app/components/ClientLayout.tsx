@@ -28,22 +28,22 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const isPublicPage = pathname === '/login' || pathname === '/signup';
 
   useEffect(() => {
-    // If loading, wait...
+
     if (isLoading) {
       return;
     }
 
-    // If authenticated AND on a public page, redirect to home
+
     if (isAuthenticated && isPublicPage) {
       router.push('/');
     }
-    // If not authenticated AND NOT on a public page, redirect to login
+
     else if (!isAuthenticated && !isPublicPage) {
       router.push('/login');
     }
   }, [isLoading, isAuthenticated, isPublicPage, router]);
 
-  // Show loading indicator while checking auth state
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
@@ -55,12 +55,12 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     );
   }
 
-  // Don't apply layout to public pages (login/signup)
+
   if (isPublicPage) {
     return <>{children}</>;
   }
 
-  // Protected layout for authenticated users
+
   if (isAuthenticated) {
     return (
       <div className="flex h-screen bg-slate-50">
@@ -103,6 +103,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     );
   }
 
-  // Fallback (should not reach this due to redirects)
+
   return null;
 } 

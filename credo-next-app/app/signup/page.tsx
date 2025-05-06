@@ -14,10 +14,10 @@ export default function SignupPage() {
   const { register, login } = useAuth();
   const router = useRouter();
 
-  // Debug state
+
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
-  // Prevent form resubmission on page refresh
+
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isLoading) {
@@ -37,33 +37,33 @@ export default function SignupPage() {
     setDebugInfo(null);
 
     try {
-      // Simple validation
+
       if (!label.trim()) {
         throw new Error('Tenant label is required');
       }
 
-      // Show a more detailed message about waiting for tenant creation
+
       console.log('Creating tenant, please wait...');
       
-      // Register the tenant, but don't auto-login
+
       const tenantId = await register(label, false);
       console.log(`Tenant created successfully with ID: ${tenantId}`);
       
-      // Store debug info
+
       setDebugInfo({
         receivedTenantId: tenantId,
         timestamp: new Date().toISOString()
       });
       
-      // Ensure we have a valid tenant ID before showing the success screen
+
       if (!tenantId) {
         throw new Error('Registration completed but no tenant ID was returned');
       }
 
-      // Show the tenant ID to the user
+
       setRegisteredTenantId(tenantId);
       
-      // Double-check to ensure state was updated
+
       console.log(`Set registeredTenantId to: ${tenantId}`);
     } catch (error: any) {
       console.error('Error creating tenant:', error);
@@ -94,7 +94,7 @@ export default function SignupPage() {
     }
   };
 
-  // Debug display - helps troubleshoot issues with the registration process
+
   const DebugInfo = () => {
     if (!debugInfo) return null;
     
@@ -108,7 +108,7 @@ export default function SignupPage() {
     );
   };
 
-  // Show the registration form if no tenant has been registered yet
+
   if (!registeredTenantId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -188,7 +188,7 @@ export default function SignupPage() {
     );
   }
 
-  // Show the tenant ID and options if registration was successful
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg">

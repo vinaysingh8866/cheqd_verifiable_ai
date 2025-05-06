@@ -24,8 +24,8 @@ export default function CredentialsPage() {
       
       setLoading(true);
       try {
-        // For simplicity, using dummy values for walletId and walletKey
-        // In a real implementation, these should come from secure storage or context
+
+
         const response = await credentialApi.getAll(
           'demo-wallet-id', 
           'demo-wallet-key', 
