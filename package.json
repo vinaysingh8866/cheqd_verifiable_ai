@@ -10,6 +10,7 @@
     "install:backend": "cd backend && yarn install",
     "install:frontend": "cd credo-next-app && yarn install",
     "install:all": "yarn install:backend && yarn install:frontend",
+    "deploy:install": "YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install && yarn install:all",
     "dev:backend": "cd backend && yarn dev",
     "dev:frontend": "cd credo-next-app && yarn dev",
     "dev": "dotenv -e .env concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
