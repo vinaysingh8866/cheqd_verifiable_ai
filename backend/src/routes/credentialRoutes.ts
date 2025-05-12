@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getAgent } from '../services/agentService';
-import { CredentialExchangeRecord } from '@credo-ts/core';
+import { CredentialExchangeRecord, AutoAcceptCredential } from '@credo-ts/core';
 
 const router = Router();
 
@@ -42,6 +42,86 @@ router.route('/')
       res.status(500).json({
         success: false,
         message: error.message || 'Failed to get credentials'
+      });
+    }
+  });
+
+/**
+ * Issue a credential to a connection
+ */
+router.route('/issue')
+  .post(async (req: Request, res: Response) => {
+    try {
+      const { tenantId, connectionId, credentialDefinitionId, attributes } = req.body;
+      
+      if (!tenantId || !connectionId || !credentialDefinitionId || !attributes) {
+        res.status(400).json({ 
+          success: false, 
+          message: 'Tenant ID, connection ID, credential definition ID, and attributes are required' 
+        });
+        return;
+      }
+
+      const agent = await getAgent({ tenantId });
+      
+      // Get the credential definition to retrieve the schema
+      const credentialDefinition = await agent.modules.anoncreds.getCredentialDefinition(credentialDefinitionId);
+      
+      if (!credentialDefinition) {
+        res.status(404).json({
+          success: false,
+          message: `Credential definition with ID ${credentialDefinitionId} not found`
+        });
+        return;
+      }
+      
+      const schemaId = credentialDefinition.credentialDefinition.schemaId;
+      
+      // Get the schema to get the attributes
+      const schema = await agent.modules.anoncreds.getSchema(schemaId);
+      
+      if (!schema) {
+        res.status(404).json({
+          success: false,
+          message: `Schema with ID ${schemaId} not found`
+        });
+        return;
+      }
+      
+      // Prepare credential attributes
+      const credentialAttributes = schema.schema.attrNames.map((attrName: string) => ({
+        name: attrName,
+        value: attributes[attrName] || '',
+      }));
+      
+      // Issue the credential
+      const credentialRecord = await agent.credentials.offerCredential({
+        connectionId,
+        protocolVersion: 'v2',
+        credentialFormats: {
+          anoncreds: {
+            credentialDefinitionId,
+            attributes: credentialAttributes
+          } as any  // Type assertion to fix linter error
+        },
+        autoAcceptCredential: AutoAcceptCredential.Always
+      });
+      
+      res.status(200).json({
+        success: true,
+        credential: {
+          id: credentialRecord.id,
+          state: credentialRecord.state,
+          connectionId: credentialRecord.connectionId,
+          threadId: credentialRecord.threadId,
+          credentialDefinitionId
+        }
+      });
+    } catch (error: any) {
+      console.error('Failed to issue credential:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to issue credential'
       });
     }
   });

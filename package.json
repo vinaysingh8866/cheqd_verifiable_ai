@@ -19,7 +19,7 @@
     "build": "yarn build:backend && yarn build:frontend",
     "start:backend": "cd backend && yarn start",
     "start:frontend": "cd credo-next-app && yarn start",
-    "start": "concurrently \"yarn start:backend\" \"yarn start:frontend\""
+    "start": "dotenv -e .env concurrently \"yarn start:backend\" \"yarn start:frontend\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

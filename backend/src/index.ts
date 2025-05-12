@@ -1,4 +1,4 @@
-import './shim';
+import './shim.js';
 import 'reflect-metadata';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
@@ -70,7 +70,7 @@ const startServer = async () => {
     console.log('Agent system initialized successfully');
     
 
-    app.listen(API_PORT, () => {
+    app.listen(API_PORT, '0.0.0.0', () => {
       console.log(`Credo Express backend server running on port ${API_PORT}`);
       console.log(`Agent webhooks accessible at port ${process.env.AGENT_PORT || 3003}`);
     });

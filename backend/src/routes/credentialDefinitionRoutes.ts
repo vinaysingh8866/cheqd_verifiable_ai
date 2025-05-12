@@ -50,7 +50,6 @@ router.route('/')
       }
 
       const agent = await getAgent({ tenantId });
-      agent.modules
 
       try {
         const schemaResult = await agent.modules.anoncreds.getCreatedSchemas({});
@@ -65,11 +64,9 @@ router.route('/')
         }
         
         console.log('Using schema for credential definition:', schema);
-        
 
         const schemaIdParts = schemaId.split(':');
         const network = schemaIdParts.length >= 3 ? schemaIdParts[2] : 'testnet';
-        
 
         const options: RegisterCredentialDefinitionOptions = {
           options: {
@@ -96,6 +93,8 @@ router.route('/')
         console.log('Registering credential definition with options:', JSON.stringify(options));
         const credDefResult = await agent.modules.anoncreds.registerCredentialDefinition(options);
         
+        console.log('Credential definition registered:', credDefResult);
+        
         if (credDefResult.credentialDefinitionState.state !== 'finished') {
           res.status(500).json({
             success: false,
@@ -108,13 +107,13 @@ router.route('/')
         res.status(201).json({
           success: true,
           message: 'Credential definition created successfully',
-          credentialDefinition: credDefResult.credentialDefinitionState.credentialDefinitionId
+          credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId
         });
-      } catch (schemaError: any) {
-        console.error('Error retrieving schema:', schemaError);
+      } catch (error: any) {
+        console.error('Failed to register credential definition:', error);
         res.status(500).json({
           success: false,
-          message: `Failed to retrieve schema: ${schemaError.message}`
+          message: error.message || 'Failed to register credential definition'
         });
       }
     } catch (error: any) {
@@ -122,6 +121,61 @@ router.route('/')
       res.status(500).json({
         success: false,
         message: error.message || 'Failed to create credential definition'
+      });
+    }
+  });
+
+/**
+ * Get a credential definition by full path
+ * This handles paths like: /credential-definitions/did:cheqd:testnet:123/resources/456
+ */
+router.route('/:issuerId/resources/:resourceId')
+  .get(async (req: Request, res: Response) => {
+    try {
+      const { issuerId, resourceId } = req.params;
+      const { tenantId } = req.query as {
+        tenantId?: string;
+      };
+      
+      if (!tenantId) {
+        res.status(400).json({ 
+          success: false, 
+          message: 'Tenant ID is required as query parameter' 
+        });
+        return;
+      }
+
+      const credentialDefinitionId = `${issuerId}/resources/${resourceId}`;
+      
+      try {
+        const agent = await getAgent({ tenantId });
+        const credDef = await agent.modules.anoncreds.getCredentialDefinition(credentialDefinitionId);
+        
+        if (!credDef) {
+          res.status(404).json({
+            success: false,
+            message: `Credential definition with ID ${credentialDefinitionId} not found`
+          });
+          return;
+        }
+        
+        res.status(200).json({
+          success: true,
+          credentialDefinition: credDef,
+          schemaId: credDef.credentialDefinition.schemaId
+        });
+      } catch (error: any) {
+        console.error(`Failed to get credential definition ${credentialDefinitionId}:`, error);
+        res.status(500).json({
+          success: false,
+          message: error.message || 'Failed to get credential definition'
+        });
+      }
+    } catch (error: any) {
+      console.error(`Failed to get credential definition:`, error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to get credential definition'
       });
     }
   });
@@ -145,8 +199,11 @@ router.route('/:credDefId')
         return;
       }
 
+      try {
       const agent = await getAgent({ tenantId });
-      const credDef = await agent.modules.anoncreds.getCredentialDefinition(credDefId);
+      const credDef = await agent.modules.anoncreds.getCredentialDefinition({
+        id: credDefId
+      });
       
       if (!credDef) {
         res.status(404).json({
@@ -158,8 +215,16 @@ router.route('/:credDefId')
       
       res.status(200).json({
         success: true,
-        credentialDefinition: credDef
+          credentialDefinition: credDef,
+          schemaId: credDef.credentialDefinition.schemaId
+        });
+      } catch (error: any) {
+        console.error(`Failed to get credential definition ${credDefId}:`, error);
+        res.status(500).json({
+          success: false,
+          message: error.message || 'Failed to get credential definition'
       });
+      }
     } catch (error: any) {
       console.error(`Failed to get credential definition ${req.params.credDefId}:`, error);
       res.status(500).json({

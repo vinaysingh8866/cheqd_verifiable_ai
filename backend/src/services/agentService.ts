@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Agent, ConsoleLogger, LogLevel, DidsModule, HttpOutboundTransport, WsOutboundTransport, ConnectionsModule, CredentialsModule, OutOfBandModule, AutoAcceptCredential, KeyType, TypedArrayEncoder } from '@credo-ts/core';
+import { Agent, ConsoleLogger, LogLevel, DidsModule, HttpOutboundTransport, WsOutboundTransport, ConnectionsModule, CredentialsModule, OutOfBandModule, AutoAcceptCredential, KeyType, TypedArrayEncoder, V2CredentialProtocol } from '@credo-ts/core';
 import { agentDependencies, HttpInboundTransport } from '@credo-ts/node';
 import { AskarModule } from '@credo-ts/askar';
 import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
@@ -7,7 +7,6 @@ import { TenantsModule } from '@credo-ts/tenants';
 import type { InitConfig } from '@credo-ts/core';
 import type { AskarMultiWalletDatabaseScheme } from '@credo-ts/askar';
 import { anoncreds } from '@hyperledger/anoncreds-nodejs'
-import { AnonCredsModule } from '@credo-ts/anoncreds';
 import { CheqdAnonCredsRegistry, CheqdDidRegistrar, CheqdDidResolver, CheqdModule, CheqdModuleConfig } from '@credo-ts/cheqd';
 import { KanonDIDResolver } from '../plugins/kanon/dids/KanonDidResolver';
 import { KanonDIDRegistrar } from '../plugins/kanon/dids/KanonDidRegistrar';
@@ -16,11 +15,19 @@ import { EthereumLedgerService } from '../plugins/kanon/ledger';
 import { EthereumModule } from '../plugins/kanon/KanonModule';
 import { KanonAnonCredsRegistry } from '../plugins/kanon/anoncreds/services/KanonAnonCredsRegistry';
 import dotenv from 'dotenv';
-
+import {
+    AnonCredsCredentialFormatService,
+    AnonCredsModule,
+    AnonCredsProofFormatService,
+    LegacyIndyCredentialFormatService,
+    LegacyIndyProofFormatService,
+    V1CredentialProtocol,
+    V1ProofProtocol,
+  } from '@credo-ts/anoncreds'
 dotenv.config();
 
 const agentPort = process.env.AGENT_PORT ? parseInt(process.env.AGENT_PORT) : 3003;
-const agentEndpoint = process.env.AGENT_ENDPOINT || `http://localhost:${agentPort}`;
+const agentEndpoint = process.env.AGENT_ENDPOINT || `http://147.182.218.241:${agentPort}`;
 
 const ethereumRpcUrl = process.env.ETHEREUM_RPC_URL || "http://127.0.0.1:8545/";
 const ethereumPrivateKey = process.env.ETHEREUM_PRIVATE_KEY || "";
@@ -34,6 +41,7 @@ const cosmosPayerSeed = process.env.COSMOS_PAYER_SEED || 'rack finger orange sma
 async function initializeAgent(walletId: string, walletKey: string, multiWalletDatabaseScheme?: AskarMultiWalletDatabaseScheme): Promise<Agent> {
     console.log(`Initializing agent for wallet: ${walletId}`);
 
+    const legacyIndyCredentialFormatService = new LegacyIndyCredentialFormatService()
     const config: InitConfig = {
         label: `CredoAgent-${walletId}`,
         walletConfig: {
@@ -85,6 +93,11 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
                 ),
                 credentials: new CredentialsModule({
                     autoAcceptCredentials: AutoAcceptCredential.Always,
+                    credentialProtocols: [
+                        new V2CredentialProtocol({
+                          credentialFormats: [ new AnonCredsCredentialFormatService()],
+                        }),
+                    ],
                 }),
                 oob: new OutOfBandModule(),
                 anoncreds: new AnonCredsModule({

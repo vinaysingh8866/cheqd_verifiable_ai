@@ -145,13 +145,14 @@ router.route('/')
   });
 
 /**
- * Get a schema by schemaId
+ * Get a schema by schema ID
  */
 router.route('/schemaId')
   .get(async (req: Request, res: Response) => {
     try {
-        const { tenantId } = req.query as {
+      const { tenantId, schemaId } = req.query as {
             tenantId?: string;
+        schemaId?: string;
         };
 
         if (!tenantId) {
@@ -162,10 +163,6 @@ router.route('/schemaId')
             return;
         }
 
-        const { schemaId } = req.query as {
-            schemaId?: string;
-        };
-
         if (!schemaId) {
             res.status(400).json({
                 success: false,
@@ -175,8 +172,10 @@ router.route('/schemaId')
         }
 
         const agent = await getAgent({ tenantId });
-        const schemas = await agent.modules.anoncreds.getCreatedSchemas({});
-        const schema = schemas.find((s: any) => s.schemaId === schemaId);
+      
+      try {
+        const schema = await agent.modules.anoncreds.getSchema(schemaId);
+        
         if (!schema) {
             res.status(404).json({
                 success: false,
@@ -190,10 +189,17 @@ router.route('/schemaId')
             schema
         });
     } catch (error: any) {
-        console.error(`Failed to get schema ${req.params.schemaId}:`, error);
-        res.status(500).json({
+        console.error(`Failed to get schema with ID ${schemaId}:`, error);
+        res.status(404).json({
             success: false,
-            message: error.message || 'Failed to get schema'
+          message: `Schema with ID ${schemaId} not found: ${error.message}`
+        });
+      }
+    } catch (error: any) {
+      console.error(`Failed to get schema by schema ID:`, error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to get schema by schema ID'
         });
     }
   });

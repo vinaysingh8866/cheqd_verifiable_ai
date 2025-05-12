@@ -161,6 +161,24 @@ export const credentialApi = {
     });
     
     return fetchWithErrorHandling(`${API_BASE_URL}/api/credentials/${credentialId}?${params.toString()}`);
+  },
+  
+  issue: async (
+    tenantId: string, 
+    connectionId: string, 
+    credentialDefinitionId: string, 
+    attributes: Record<string, string>
+  ) => {
+    return fetchWithErrorHandling(`${API_BASE_URL}/api/credentials/issue`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        tenantId, 
+        connectionId, 
+        credentialDefinitionId, 
+        attributes 
+      })
+    });
   }
 };
 
@@ -223,7 +241,19 @@ export const credentialDefinitionApi = {
     const params = new URLSearchParams({
       tenantId
     });
+    console.log(`Fetching credential definition: ${credDefId}`);
+    // Check if the credDefId contains a resource path format
+    if (credDefId.includes('/resources/')) {
+      // Parse issuer ID and resource ID from the format "issuerId/resources/resourceId"
+      const parts = credDefId.split('/resources/');
+      if (parts.length === 2) {
+        const issuerId = parts[0];
+        const resourceId = parts[1];
+        return fetchWithErrorHandling(`${API_BASE_URL}/api/credential-definitions/${issuerId}/resources/${resourceId}?${params.toString()}`);
+      }
+    }
     
+    // Use the regular endpoint for simple IDs
     return fetchWithErrorHandling(`${API_BASE_URL}/api/credential-definitions/${credDefId}?${params.toString()}`);
   },
   
