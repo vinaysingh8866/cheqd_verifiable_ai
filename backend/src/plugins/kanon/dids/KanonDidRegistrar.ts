@@ -136,7 +136,7 @@ export class KanonDIDRegistrar implements DidRegistrar {
         options.network,
         issuerId 
       );
-      console.log(response, "response");
+      console.log(response, "responsfbe");
 
       return {
         resource: {
@@ -175,10 +175,10 @@ export class KanonDIDRegistrar implements DidRegistrar {
         agentContext,
         options.did
       );
-      console.log(did, options, "did");
-
+      console.log(did, options, "diddsfgsdf");
+      // ${credentialDefinition.issuerId}/resources/${credentialDefinitionResource.id}
       const response = await etheriumLedgerService.registerCredentialDefinition(
-        did,
+        `${options.issuerId}/resources/${options.id}`,
         options.data.schemaId,
         options.issuerId,
         options.network

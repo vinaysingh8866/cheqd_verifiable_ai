@@ -63,10 +63,9 @@ router.route('/issue')
       }
 
       const agent = await getAgent({ tenantId });
-      
-      // Get the credential definition to retrieve the schema
+
       const credentialDefinition = await agent.modules.anoncreds.getCredentialDefinition(credentialDefinitionId);
-      
+
       if (!credentialDefinition) {
         res.status(404).json({
           success: false,
@@ -77,7 +76,6 @@ router.route('/issue')
       
       const schemaId = credentialDefinition.credentialDefinition.schemaId;
       
-      // Get the schema to get the attributes
       const schema = await agent.modules.anoncreds.getSchema(schemaId);
       
       if (!schema) {
@@ -87,22 +85,26 @@ router.route('/issue')
         });
         return;
       }
-      
+      console.log(schema, "schema");
       // Prepare credential attributes
       const credentialAttributes = schema.schema.attrNames.map((attrName: string) => ({
         name: attrName,
         value: attributes[attrName] || '',
       }));
-      
+      console.log(credentialAttributes, credentialDefinitionId, connectionId);
       // Issue the credential
+      const credDef = await agent.modules.anoncreds.getCreatedCredentialDefinitions({
+        credentialDefinitionId
+      });
       const credentialRecord = await agent.credentials.offerCredential({
         connectionId,
         protocolVersion: 'v2',
         credentialFormats: {
           anoncreds: {
-            credentialDefinitionId,
+
+            credentialDefinitionId:credDef[0].credentialDefinitionId,
             attributes: credentialAttributes
-          } as any  // Type assertion to fix linter error
+          }  
         },
         autoAcceptCredential: AutoAcceptCredential.Always
       });

@@ -39,9 +39,7 @@ const tenantAgentCache: Record<string, Agent> = {};
 const cosmosPayerSeed = process.env.COSMOS_PAYER_SEED || 'rack finger orange small grab regular shy oyster spread history mechanic shock';
 
 async function initializeAgent(walletId: string, walletKey: string, multiWalletDatabaseScheme?: AskarMultiWalletDatabaseScheme): Promise<Agent> {
-    console.log(`Initializing agent for wallet: ${walletId}`);
 
-    const legacyIndyCredentialFormatService = new LegacyIndyCredentialFormatService()
     const config: InitConfig = {
         label: `CredoAgent-${walletId}`,
         walletConfig: {
@@ -70,8 +68,7 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
             modules: {
                 tenants: new TenantsModule(),
                 askar: new AskarModule({
-                    ariesAskar: ariesAskar,
-                    multiWalletDatabaseScheme
+                    ariesAskar: ariesAskar
                 }),
                 dids: new DidsModule({
                     resolvers: [new CheqdDidResolver(), new KanonDIDResolver(ledgerService)],

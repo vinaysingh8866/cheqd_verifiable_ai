@@ -204,14 +204,14 @@ export class EthereumLedgerService {
 
       const decoded = iface.decodeFunctionResult("getSchema", result);
       const response = decoded;
-      console.log(response, "response");
-      
+      console.log(response, "resdvponse");
+      console.log(response[0], "response[0]");
       try {
         const Json = JSON.parse(response[0]);
-
+        console.log(Json.data.data.attrNames, "Json");
         return {
           schema: {
-            attrNames: Json.data.attrNames,
+            attrNames: Json.data.data.attrNames,
             name: Json.name,
             version: Json.data.version,
             issuerId: Json.data.issuerId,
@@ -393,19 +393,19 @@ export class EthereumLedgerService {
 
   async getCredentialDefinition(
     credDefId: string,
-    networkName: string = "mainnet"
+    networkName: string = "testnet"
   ) {
     try {
       const { provider } = await this.getProviderAndSigner(networkName);
       
-
+      console.log(credDefId, "credDefId");
       const iface = new ethers.Interface([
         "function getCredentialDefinition(string) view returns (string, string)"
       ]);
       
 
       const data = iface.encodeFunctionData("getCredentialDefinition", [credDefId]);
-      
+      console.log(data, "datadfsdf");
 
       const result = await provider.call({
         to: this.contractAddress,
@@ -413,7 +413,9 @@ export class EthereumLedgerService {
       });
       
 
-      return iface.decodeFunctionResult("getCredentialDefinition", result);
+      const response = iface.decodeFunctionResult("getCredentialDefinition", result);
+      console.log(response, "responsesdfdf");
+      return response;
     } catch (error: any) {
       console.error("Failed to get credential definition:", error);
       throw new Error(`Failed to get credential definition: ${error.message || error}`);

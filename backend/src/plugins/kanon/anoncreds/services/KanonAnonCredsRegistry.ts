@@ -38,8 +38,8 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
         agentContext.dependencyManager.resolve(KanonDIDResolver);
       console.log(schemaId);
       const parsedDid = parsekanonDid(schemaId);
-      console.log(parsedDid);
-
+      console.log(parsedDid, "parsedDiddssd");
+      console.log(schemaId, "schemaId");
 
 
       const response = await kanonDidResolver.resolveResource(
@@ -156,14 +156,17 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
     const ledgerService = agentContext.dependencyManager.resolve(
       EthereumLedgerService
     );
+    console.log(credentialDefinitionId, "credentialDefinitionIdsdsd");
     const credentialDefinition = await ledgerService.getCredentialDefinition(
       credentialDefinitionId
     );
-    console.log(credentialDefinition, "credentialDefinition");
+    const schemaId = credentialDefinition[0]
+    const issuerId = credentialDefinition[1]
+    console.log(credentialDefinition, "credentialDefinitionjhgfjhg");
     return {
       credentialDefinition: {
-        issuerId: credentialDefinition.issuerId,
-        schemaId: credentialDefinition.schemaId,
+        issuerId: issuerId,
+        schemaId: schemaId,
         tag: credentialDefinition.tag,
         type: credentialDefinition.type,
         value: credentialDefinition.value,
@@ -196,7 +199,7 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
       issuerId: credentialDefinition.issuerId,
       version: uuid(),
     } as KanonCreateResourceOptions;
-
+    console.log(credentialDefinitionResource, "credentialDefinitionResource");
     const response = await kanonDisRegistrar.createCredentialDefinition(
       agentContext,
       credentialDefinitionResource.id!,

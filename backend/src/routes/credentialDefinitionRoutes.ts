@@ -149,8 +149,12 @@ router.route('/:issuerId/resources/:resourceId')
       
       try {
         const agent = await getAgent({ tenantId });
-        const credDef = await agent.modules.anoncreds.getCredentialDefinition(credentialDefinitionId);
-        
+        const credDefs = await agent.modules.anoncreds.getCreatedCredentialDefinitions({
+          credentialDefinitionId: credentialDefinitionId
+        });
+        console.log(credDefs, "credDefsfgfgg");
+        const credDef = credDefs[0]
+        console.log(credDef, "credDef");
         if (!credDef) {
           res.status(404).json({
             success: false,
@@ -201,9 +205,13 @@ router.route('/:credDefId')
 
       try {
       const agent = await getAgent({ tenantId });
-      const credDef = await agent.modules.anoncreds.getCredentialDefinition({
-        id: credDefId
-      });
+      const credDefs = await agent.modules.anoncreds.getCreatedCredentialDefinitions({
+        credentialDefinitionId: credDefId
+      })
+      console.log(credDefs, "credDefsAll");
+      const credDef = credDefs[0]
+
+      console.log(credDef, "credDefsdf");
       
       if (!credDef) {
         res.status(404).json({

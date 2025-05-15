@@ -329,7 +329,7 @@ export default function CredentialsPage() {
                     <option value="">Select Credential Definition</option>
                     {credentialDefinitions.map((credDef) => (
                       <option key={credDef.id} value={credDef.credentialDefinitionId}>
-                        {credDef.credentialDefinitionId.substring(0, 30)}...
+                        {credDef.credentialDefinitionId}...
                       </option>
                     ))}
                   </select>
