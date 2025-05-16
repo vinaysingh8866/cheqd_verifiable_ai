@@ -142,7 +142,9 @@ router.route('/invitation')
       const agent = await getAgent({ tenantId });
       
 
-      const { outOfBandInvitation } = await agent.oob.createInvitation();
+      const { outOfBandInvitation } = await agent.oob.createInvitation({
+        multiUseInvitation: true
+      });
       
 
       const invitationUrl = outOfBandInvitation.toUrl({ domain: agent.config.endpoints[0] });
