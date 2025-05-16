@@ -4,7 +4,7 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 import { useRouter } from 'next/navigation'; // Using navigation from App Router
 import { ToastContainer, toast } from 'react-toastify';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+const API_BASE_URL = 'http://147.182.218.241:3002';
 
 interface AuthContextType {
   tenantId: string | null;
