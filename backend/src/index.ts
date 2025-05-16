@@ -12,6 +12,7 @@ import credentialDefinitionRoutes from './routes/credentialDefinitionRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import authRoutes from './routes/authRoutes';
 import didRoutes from './routes/didRoutes';
+import proofRoutes from './routes/proofRoutes';
 
 
 dotenv.config();
@@ -60,6 +61,7 @@ app.use('/api/credential-definitions', credentialDefinitionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/dids', didRoutes);
+app.use('/api/proofs', proofRoutes);
 
 
 const startServer = async () => {

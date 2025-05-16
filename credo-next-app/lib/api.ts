@@ -268,6 +268,67 @@ export const credentialDefinitionApi = {
 };
 
 /**
+ * Proof API functions
+ */
+export const proofApi = {
+  getAll: async (walletId: string, walletKey: string, tenantId?: string) => {
+    const params = new URLSearchParams({
+      walletId,
+      walletKey,
+      ...(tenantId ? { tenantId } : {})
+    });
+    
+    return fetchWithErrorHandling(`${API_BASE_URL}/api/proofs?${params.toString()}`);
+  },
+  
+  getById: async (proofId: string, walletId: string, walletKey: string, tenantId?: string) => {
+    const params = new URLSearchParams({
+      walletId,
+      walletKey,
+      ...(tenantId ? { tenantId } : {})
+    });
+    
+    return fetchWithErrorHandling(`${API_BASE_URL}/api/proofs/${proofId}?${params.toString()}`);
+  },
+  
+  requestProof: async (
+    tenantId: string, 
+    connectionId: string,
+    proofAttributes: {name: string, restrictions?: any[]}[] | Record<string, any>,
+    credentialDefinitionId?: string
+  ) => {
+    return fetchWithErrorHandling(`${API_BASE_URL}/api/proofs/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        tenantId, 
+        connectionId, 
+        proofAttributes,
+        credentialDefinitionId
+      })
+    });
+  },
+  
+  acceptProofRequest: async (
+    proofId: string,
+    tenantId: string,
+    selectedCredentials: {
+      requestedAttributes: Record<string, any>,
+      selfAttestedAttributes?: Record<string, string>
+    }
+  ) => {
+    return fetchWithErrorHandling(`${API_BASE_URL}/api/proofs/${proofId}/accept`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        tenantId, 
+        selectedCredentials 
+      })
+    });
+  }
+};
+
+/**
  * DID API functions
  */
 export const didApi = {

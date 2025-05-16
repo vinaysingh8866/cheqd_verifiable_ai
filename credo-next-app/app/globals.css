@@ -5,7 +5,7 @@
 /* Root Custom Properties - More muted colors */
 :root {
   --background: #f8fafc; /* slate-50 */
-  --foreground: #1e293b; /* slate-800 */
+  --foreground: #000000; /* black */
   --primary: #4b5563; /* gray-600 */
   --primary-dark: #374151; /* gray-700 */
   --secondary: #475569; /* slate-600 */
@@ -20,16 +20,35 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #1e293b; /* slate-800 */
-    --foreground: #f1f5f9; /* slate-100 */
+    --foreground: #000000; /* black */
   }
 }
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800;
+    @apply bg-slate-50 text-black;
     background: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  }
+  
+  /* Ensure all text elements use black text except for sidebar elements */
+  p, h1, h2, h3, h4, h5, h6, span, div, a, button, input, textarea, select, label {
+    color: #000000;
+  }
+
+  /* Sidebar specific overrides to ensure white text */
+  aside.bg-slate-800 *,
+  aside.bg-slate-900 *,
+  nav.flex-1 li a,
+  aside [class*="text-white"],
+  aside [class*="text-slate-400"] {
+    color: white !important;
+  }
+  
+  /* Preserve the lighter text color for the tenant ID in the sidebar */
+  aside .text-slate-400 {
+    color: #94a3b8 !important; /* slate-400 */
   }
 }
 

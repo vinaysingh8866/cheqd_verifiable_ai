@@ -13,11 +13,10 @@ const navItems = [
   { href: '/', label: 'Dashboard' },
   { href: '/connections', label: 'Connections' },
   { href: '/credentials', label: 'Credentials' },
+  { href: '/proofs', label: 'Proofs' },
   { href: '/dids', label: 'DIDs' },
   { href: '/schemas', label: 'Schemas' },
   { href: '/credential-definitions', label: 'Credential Defs' },
-  { href: '/verifications', label: 'Verifications' },
-  { href: '/profile', label: 'Profile' },
 ];
 
 export default function ClientLayout({ children }: ClientLayoutProps) {

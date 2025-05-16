@@ -1,11 +1,11 @@
 import 'reflect-metadata';
-import { Agent, ConsoleLogger, LogLevel, DidsModule, HttpOutboundTransport, WsOutboundTransport, ConnectionsModule, CredentialsModule, OutOfBandModule, AutoAcceptCredential, KeyType, TypedArrayEncoder, V2CredentialProtocol } from '@credo-ts/core';
+import { Agent, ConsoleLogger, LogLevel, DidsModule, HttpOutboundTransport, WsOutboundTransport, ConnectionsModule, CredentialsModule, OutOfBandModule, AutoAcceptCredential, KeyType, TypedArrayEncoder, V2CredentialProtocol, ProofsModule, AutoAcceptProof, V2ProofProtocol } from '@credo-ts/core';
 import { agentDependencies, HttpInboundTransport } from '@credo-ts/node';
 import { AskarModule } from '@credo-ts/askar';
 import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
 import { TenantsModule } from '@credo-ts/tenants';
 import type { InitConfig } from '@credo-ts/core';
-import type { AskarMultiWalletDatabaseScheme } from '@credo-ts/askar';
+import { AskarMultiWalletDatabaseScheme } from '@credo-ts/askar';
 import { anoncreds } from '@hyperledger/anoncreds-nodejs'
 import { CheqdAnonCredsRegistry, CheqdDidRegistrar, CheqdDidResolver, CheqdModule, CheqdModuleConfig } from '@credo-ts/cheqd';
 import { KanonDIDResolver } from '../plugins/kanon/dids/KanonDidResolver';
@@ -23,7 +23,7 @@ import {
     LegacyIndyProofFormatService,
     V1CredentialProtocol,
     V1ProofProtocol,
-  } from '@credo-ts/anoncreds'
+} from '@credo-ts/anoncreds'
 dotenv.config();
 
 const agentPort = process.env.AGENT_PORT ? parseInt(process.env.AGENT_PORT) : 3003;
@@ -51,24 +51,26 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
     };
     const ethConfig = new KanonModuleConfig({
         networks: [
-          {
-            network: "testnet",
-            rpcUrl: ethereumRpcUrl,
-            privateKey: ethereumPrivateKey,
-          },
+            {
+                network: "testnet",
+                rpcUrl: ethereumRpcUrl,
+                privateKey: ethereumPrivateKey,
+            },
         ],
-      });
-      const ledgerService = new EthereumLedgerService(ethConfig);
+    });
+    const ledgerService = new EthereumLedgerService(ethConfig);
     try {
 
-
+        // did:cheqd:testnet:e6a2015b-3d0e-462a-bf8b-88872553867d/resources/d99ac606-ab4b-4957-97c5-bf97438b2180
         const agent = new Agent({
             config,
             dependencies: agentDependencies,
             modules: {
                 tenants: new TenantsModule(),
                 askar: new AskarModule({
-                    ariesAskar: ariesAskar
+                    ariesAskar: ariesAskar,
+                    // Database per wallet
+                    multiWalletDatabaseScheme: AskarMultiWalletDatabaseScheme.DatabasePerWallet
                 }),
                 dids: new DidsModule({
                     resolvers: [new CheqdDidResolver(), new KanonDIDResolver(ledgerService)],
@@ -77,6 +79,14 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
                 connections: new ConnectionsModule({
                     autoAcceptConnections: true,
                 }),
+                proofs: new ProofsModule({
+                    autoAcceptProofs: AutoAcceptProof.Always,
+                    proofProtocols: [
+                      new V2ProofProtocol({
+                        proofFormats: [new AnonCredsProofFormatService()],
+                      }),
+                    ],
+                  }),
                 kanon: new EthereumModule(ethConfig),
                 cheqd: new CheqdModule(
                     new CheqdModuleConfig({
@@ -92,7 +102,7 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
                     autoAcceptCredentials: AutoAcceptCredential.Always,
                     credentialProtocols: [
                         new V2CredentialProtocol({
-                          credentialFormats: [ new AnonCredsCredentialFormatService()],
+                            credentialFormats: [new AnonCredsCredentialFormatService()],
                         }),
                     ],
                 }),
@@ -110,10 +120,10 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
 
         console.log(`Registering HTTP inbound transport on port ${agentPort}`);
         agent.registerInboundTransport(new HttpInboundTransport({ port: agentPort }));
-      
+
         await agent.initialize();
         console.log(`Agent initialized successfully for wallet: ${walletId}`);
-        
+
         mainAgent = agent;
 
         return agent;
@@ -148,7 +158,7 @@ export async function getAgent({
             const tenantAgent = await mainAgent.modules.tenants.getTenantAgent({
                 tenantId
             });
-            
+
 
             tenantAgentCache[tenantId] = tenantAgent;
             console.log(`Cached tenant agent for tenant: ${tenantId}`);

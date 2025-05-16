@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getAgent } from '../services/agentService';
-import { RegisterCredentialDefinitionOptions } from '@credo-ts/anoncreds';
+import { AnonCredsCredentialDefinitionPrivateRecord, AnonCredsCredentialDefinitionPrivateRepository, AnonCredsCredentialDefinitionRecord, AnonCredsCredentialDefinitionRepository, AnonCredsKeyCorrectnessProofRecord, AnonCredsKeyCorrectnessProofRepository, RegisterCredentialDefinitionOptions } from '@credo-ts/anoncreds';
 
 const router = Router();
 
@@ -91,8 +91,69 @@ router.route('/')
         };
         
         console.log('Registering credential definition with options:', JSON.stringify(options));
-        const credDefResult = await agent.modules.anoncreds.registerCredentialDefinition(options);
-        
+        const isKanon = schema.schema.issuerId.includes('did:kanon');
+        let credDefResult;
+        if (isKanon) {
+          // add type and value if did:kanon 
+          credDefResult = await agent.modules.anoncreds.registerCredentialDefinition({
+            options: {
+              network: network,
+              methodSpecificIdAlgo: 'uuid',
+            },
+            credentialDefinition: {
+              issuerId: schema.schema.issuerId, // Use the issuer ID from the schema
+              schemaId: schema.schemaId,
+              tag,
+              type: 'CL',
+            }
+          });
+          console.log(credDefResult, "credDefResult");
+        }
+        else {
+          credDefResult = await agent.modules.anoncreds.registerCredentialDefinition({
+            options: {
+              network: network,
+            methodSpecificIdAlgo: 'uuid',
+          },
+          credentialDefinition: {
+            issuerId: schema.schema.issuerId, // Use the issuer ID from the schema
+            schemaId: schema.schemaId,
+            tag,
+            
+          }
+        });
+        console.log(credDefResult, "credDefResult");
+      }
+        // await agent.context.dependencyManager.resolve(AnonCredsCredentialDefinitionRepository).save(
+        //   agent.context,
+        //   new AnonCredsCredentialDefinitionRecord({
+        //     credentialDefinition: credDefResult.credentialDefinitionState.credentialDefinition,
+        //     credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId,
+        //     methodName: 'inMemory',
+        //   })
+        // )
+        // console.log(credDefResult, "credDefResulzdfsadt");
+        // console.log(credDefResult.credentialDefinitionState.credentialDefinitionPrivate, "credDefResult.credentialDefinitionState.credentialDefinitionPrivate");
+        // console.log(credDefResult.credentialDefinitionState.keyCorrectnessProof, "credDefResult.credentialDefinitionState.keyCorrectnessProof");
+        // console.log(credDefResult.credentialDefinitionState.credentialDefinitionId, "credDefResult.credentialDefinitionState.credentialDefinitionId");
+
+        // await agent.context.dependencyManager.resolve(AnonCredsCredentialDefinitionPrivateRepository).save(
+        //   agent.context,
+        //   new AnonCredsCredentialDefinitionPrivateRecord({
+        //     value: credDefResult.credentialDefinitionState.credentialDefinitionPrivate,
+        //     credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId,
+        //   })
+        // )
+      
+        // await agent.context.dependencyManager.resolve(AnonCredsKeyCorrectnessProofRepository).save(
+        //   agent.context,
+        //   new AnonCredsKeyCorrectnessProofRecord({
+        //     value: credDefResult.credentialDefinitionState.keyCorrectnessProof,
+        //     credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId,
+        //   })
+        // )
+      
+      
         console.log('Credential definition registered:', credDefResult);
         
         if (credDefResult.credentialDefinitionState.state !== 'finished') {

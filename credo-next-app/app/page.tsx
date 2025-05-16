@@ -79,9 +79,7 @@ export default function DashboardPage() {
           ) : (
             <div className="flex flex-col">
               <p className="text-2xl font-bold text-slate-700">{stats?.connections.total || 0}</p>
-              <p className="text-sm text-slate-500">
-                <span className="text-teal-600">{stats?.connections.active || 0}</span> active
-              </p>
+             
               <Link href="/connections" className="text-sm text-blue-600 hover:text-blue-800 mt-2">
                 View all connections →
               </Link>
@@ -96,10 +94,6 @@ export default function DashboardPage() {
           ) : (
             <div className="flex flex-col">
               <p className="text-2xl font-bold text-teal-700">{stats?.credentials.total || 0}</p>
-              <p className="text-sm text-slate-500">
-                <span className="text-teal-600">{stats?.credentials.issued || 0}</span> issued · 
-                <span className="text-blue-600 ml-1">{stats?.credentials.received || 0}</span> received
-              </p>
             </div>
           )}
         </div>

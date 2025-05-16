@@ -160,6 +160,8 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
     const credentialDefinition = await ledgerService.getCredentialDefinition(
       credentialDefinitionId
     );
+    console.log(credentialDefinition, "credentialDefinitionjhgfjhgsdfs");
+    console.log(credentialDefinition[0], "credentialDefinitionjhgfjhgsdfs");
     const schemaId = credentialDefinition[0]
     const issuerId = credentialDefinition[1]
     console.log(credentialDefinition, "credentialDefinitionjhgfjhg");
@@ -167,9 +169,14 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
       credentialDefinition: {
         issuerId: issuerId,
         schemaId: schemaId,
-        tag: credentialDefinition.tag,
-        type: credentialDefinition.type,
-        value: credentialDefinition.value,
+        tag: "credentialDefinition.tag",
+        type: 'CL',
+        value: {
+          primary: {
+            name: 'primary',
+            
+          }
+        }
       },
       credentialDefinitionId,
       credentialDefinitionMetadata: {},
@@ -205,6 +212,7 @@ export class KanonAnonCredsRegistry implements AnonCredsRegistry {
       credentialDefinitionResource.id!,
       credentialDefinitionResource
     );
+    console.log(response, "response anoncredsdsds");
 
     return {
       credentialDefinitionState: {

@@ -207,14 +207,14 @@ export class EthereumLedgerService {
       console.log(response, "resdvponse");
       console.log(response[0], "response[0]");
       try {
-        const Json = JSON.parse(response[0]);
+        let Json = JSON.parse(response[0]);
         console.log(Json.data.data.attrNames, "Json");
         return {
           schema: {
             attrNames: Json.data.data.attrNames,
-            name: Json.name,
-            version: Json.data.version,
-            issuerId: Json.data.issuerId,
+            name: Json.data.data.name,
+            version: Json.data.data.version,
+            issuerId: Json.data.data.issuerId,
           },
           schemaId,
           resolutionMetadata: {},

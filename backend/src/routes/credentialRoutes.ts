@@ -101,7 +101,7 @@ router.route('/issue')
         protocolVersion: 'v2',
         credentialFormats: {
           anoncreds: {
-
+            type: 'CL',
             credentialDefinitionId:credDef[0].credentialDefinitionId,
             attributes: credentialAttributes
           }  
