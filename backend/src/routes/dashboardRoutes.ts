@@ -32,6 +32,7 @@ router.route('/verified-ai-credentials')
     try {
       // Get main agent credentials only
       const mainAgent = await db.getMainAgent();
+      const debug = req.query.debug === 'true';  // Add query param for debug mode
       
       if (!mainAgent) {
         res.status(200).json({
@@ -45,38 +46,84 @@ router.route('/verified-ai-credentials')
       console.log('Main agent found:', mainAgent.tenant_id);
       
       // Get credentials issued by the main agent
-      // const issuedCredentials = await db.getIssuedCredentialsByIssuer(mainAgent.tenant_id);
-      const tenantId = mainAgent.tenant_id;
-      const agent = await getAgent({ tenantId });
-      const issuedCredentials = await agent.credentials.getAll();
+      const issuedCredentials = await db.getIssuedCredentialsByIssuer(mainAgent.tenant_id);
+      // const tenantId = mainAgent.tenant_id;
+      // const agent = await getAgent({ tenantId });
+      // const issuedCredentials = await agent.credentials.getAll();
       console.log('Issued credentials by main agent (raw):', JSON.stringify(issuedCredentials));
       console.log('Number of credentials found in database:', issuedCredentials.length);
       
       // Format credentials for the AI dashboard
       const aiCredentials = issuedCredentials.map(cred => {
-        // Extract relevant information for display
+        // Parse attributes if stored as string
         const attributes = typeof cred.attributes === 'string' 
           ? JSON.parse(cred.attributes) 
           : cred.attributes;
         
+        // Check if the credential has credentialAttributes (from agent) or uses attributes (from database)
+        let parsedAttributes = {};
+        
+        if (cred.credentialAttributes && Array.isArray(cred.credentialAttributes)) {
+          // For credentials coming directly from the agent
+          parsedAttributes = cred.credentialAttributes.reduce((acc: Record<string, any>, attr: any) => {
+            if (attr.name && attr.value !== undefined) {
+              acc[attr.name] = attr.value;
+            }
+            return acc;
+          }, {});
+        } else if (attributes) {
+          // For credentials from the database
+          parsedAttributes = attributes;
+        }
+        
+        // Build response object
         return {
           id: cred.id,
-          credential_id: cred.credential_id,
-          issuer_tenant_id: cred.issuer_tenant_id,
-          credential_definition_id: cred.credential_definition_id,
-          schema_id: cred.schema_id,
-          attributes: attributes,
-          created_at: cred.created_at
+          credential_id: cred.credential_id || cred.id,
+          issuer_tenant_id: cred.issuer_tenant_id || (cred.metadata?.issuer_did ? cred.metadata.issuer_did : null),
+          credential_definition_id: cred.credential_definition_id || 
+            (cred.metadata && cred.metadata['_anoncreds/credential'] ? 
+              cred.metadata['_anoncreds/credential'].credentialDefinitionId : null),
+          schema_id: cred.schema_id || 
+            (cred.metadata && cred.metadata['_anoncreds/credential'] ? 
+              cred.metadata['_anoncreds/credential'].schemaId : null),
+          holder_connection_id: cred.holder_connection_id || cred.connectionId,
+          attributes: parsedAttributes,
+          state: cred.state || 'done',
+          createdAt: cred.createdAt || cred.created_at,
+          additionalInfo: {
+            invitation_url: cred.invitation_url,
+            icon_url: cred.icon_url,
+            homepage_url: cred.homepage_url,
+            ai_description: cred.ai_description
+          }
         };
       });
       
       console.log('Formatted credentials for response:', JSON.stringify(aiCredentials));
       console.log('Number of credentials after formatting:', aiCredentials.length);
       
-      res.status(200).json({
+      // Add more details for debugging for the first credential in the list
+      if (aiCredentials.length > 0) {
+        console.log('Example of first formatted credential:', JSON.stringify(aiCredentials[0], null, 2));
+      }
+      
+      // Response object
+      const responseObject: any = {
         success: true,
         credentials: aiCredentials
-      });
+      };
+      
+      // Include raw credentials in debug mode
+      if (debug) {
+        responseObject.raw_credentials = issuedCredentials;
+        responseObject.debug_info = {
+          main_agent_id: mainAgent.tenant_id,
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      res.status(200).json(responseObject);
     } catch (error: any) {
       console.error('Failed to get verified AI credentials:', error);
       res.status(500).json({
