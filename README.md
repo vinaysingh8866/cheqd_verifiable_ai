@@ -1,12 +1,12 @@
-# Credo Next.js App with Express Backend
+# Verifiable AI Platform
 
-This project consists of a Next.js frontend application and an Express backend that handles the Credo agent functionality.
+This platform allows issuance and verification of AI-generated content credentials using decentralized identity technology.
 
 ## Architecture Overview
 
-- **Express Backend**: Handles the Credo agent functionality, including port binding and webhook handling.
-- **Next.js Frontend**: Provides the user interface and communicates with the backend through REST APIs.
-- **Docker**: Both applications are containerized for easy deployment.
+- **Express Backend**: Handles credential issuance, verification, and management through a RESTful API.
+- **Next.js Frontend**: Provides a modern user interface for credential management and verification.
+- **PostgreSQL Database**: Stores credential records and related metadata.
 
 ## Setup Instructions
 
@@ -14,24 +14,26 @@ This project consists of a Next.js frontend application and an Express backend t
 
 - Docker and Docker Compose
 - Node.js 18+ (for local development)
+- PostgreSQL database (local or remote)
 
 ### Environment Variables
 
 #### Backend (.env file in backend directory)
 ```
-# Agent configuration
-AGENT_PORT=3001
-AGENT_ENDPOINT=http://localhost:3001
+# Database configuration
+DATABASE_URL=postgresql://verifiable_ai_user:password@localhost:5432/verifiable_ai
 
 # API configuration
-API_PORT=3002
+PORT=3002
 
-# Optional default admin wallet
-# DEFAULT_ADMIN_WALLET_ID=admin-wallet
-# DEFAULT_ADMIN_WALLET_KEY=admin-key
+# JWT Secret for authentication
+JWT_SECRET=your-jwt-secret
+
+# Agent endpoint (if applicable)
+AGENT_ENDPOINT=http://localhost:3001
 ```
 
-#### Frontend (.env file in credo-next-app directory)
+#### Frontend (.env file in root directory)
 ```
 # API URL for the Express backend
 NEXT_PUBLIC_API_URL=http://localhost:3002
@@ -41,8 +43,8 @@ NEXT_PUBLIC_API_URL=http://localhost:3002
 
 1. Clone the repository
 2. Set up environment variables:
-   - Copy `backend/.env.example` to `backend/.env` and adjust as needed
-   - Copy `credo-next-app/.env.example` to `credo-next-app/.env` and adjust as needed
+   - Copy `.env.example` to `.env` and adjust as needed
+   - Ensure database connection settings are correct
 3. Start the containers:
    ```
    docker-compose up -d
@@ -50,7 +52,6 @@ NEXT_PUBLIC_API_URL=http://localhost:3002
 4. Access the application:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:3002
-   - Agent Webhook: http://localhost:3001
 
 ### Local Development
 
@@ -63,30 +64,43 @@ npm run dev
 
 #### Frontend
 ```bash
-cd credo-next-app
 npm install
 npm run dev
 ```
 
+## Database Management
+
+The platform uses a PostgreSQL database to store credential information. Several utility scripts are provided:
+
+- `backend/src/dbFix.js` - Adds missing columns to the database schema
+- `backend/src/dbDelete.js` - Utility to delete all credentials (use with `--confirm` flag)
+
+To run these utilities:
+```bash
+node backend/src/dbFix.js
+node backend/src/dbDelete.js --confirm
+```
+
 ## API Endpoints
 
-### Agent API
-- `POST /api/agent/initialize` - Initialize or get an agent
-- `POST /api/agent/validate` - Validate wallet credentials
-- `POST /api/agent/tenant` - Create a tenant
-
-### Connections API
-- `GET /api/connections` - Get all connections
-- `GET /api/connections/:connectionId` - Get a connection by ID
-- `POST /api/connections/invitation` - Create a new invitation
+### Authentication
+- `POST /api/auth/login` - Authenticate and get access token
+- `POST /api/auth/register` - Register a new user
 
 ### Credentials API
-- `GET /api/credentials` - Get all credentials
+- `GET /api/credentials` - Get all issued credentials
 - `GET /api/credentials/:credentialId` - Get a credential by ID
+- `POST /api/credentials` - Issue a new credential
+- `GET /api/credentials/public/:credentialId` - Public endpoint to fetch credential details
 
-## Architecture Benefits
+### Tenants API
+- `GET /api/tenants` - Get all tenants
+- `POST /api/tenants` - Create a new tenant
 
-- Separation of concerns between UI and agent functionality
-- Support for long-running processes in the Express backend
-- Container-based deployment for easier scaling and deployment
-- Prevention of Next.js serverless function timeouts and port binding issues 
+## Features
+
+- Issue verifiable credentials for AI-generated content
+- Verify the authenticity of AI-generated content
+- QR code scanning for credential verification
+- User-friendly credential management
+- Public access to credential details via shareable links 
