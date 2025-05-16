@@ -98,6 +98,7 @@ router.route('/issue')
       });
       const credentialRecord = await agent.credentials.offerCredential({
         connectionId,
+        // @ts-ignore
         protocolVersion: 'v2',
         credentialFormats: {
           anoncreds: {

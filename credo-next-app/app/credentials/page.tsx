@@ -261,7 +261,6 @@ export default function CredentialsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Connection</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credential Definition</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -273,7 +272,6 @@ export default function CredentialsPage() {
                     {new Date(credential.createdAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-sm">{credential.connectionId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-sm">{credential.credentialDefinitionId || 'N/A'}</td>
                 </tr>
               ))}
             </tbody>

@@ -84,7 +84,7 @@ router.route('/request')
         Object.assign(requestedAttributes, proofAttributes);
       }
       
-      console.log('Formatted requested attributes:', requestedAttributes);
+      console.log('Formatted requested attributes:', JSON.stringify(requestedAttributes, null, 2));
       
       // Send the proof request
       const proofRecord = await agent.proofs.requestProof({
@@ -126,7 +126,8 @@ router.route('/:proofId/accept')
     try {
       const { proofId } = req.params;
       const { tenantId, selectedCredentials } = req.body;
-      
+      console.log(JSON.stringify(req.body, null, 2), "req.body");
+
       if (!tenantId || !selectedCredentials) {
         res.status(400).json({ 
           success: false, 
@@ -155,130 +156,15 @@ router.route('/:proofId/accept')
         });
         console.log('Automatic credential selection successful:', JSON.stringify(requestedCredentials, null, 2));
       } catch (error: any) {
-        console.log('Automatic credential selection failed:', error.message);
-        
-        // If automatic selection fails, try to use the manually selected credentials
-        if (selectedCredentials.requestedAttributes || selectedCredentials.selfAttestedAttributes) {
-          console.log('Using manually selected credentials');
-          
-          // Try to access the proof request message
-          let requestAttachment;
-          let proofRequest;
-          
-          try {
-            // Try to get the message from the proof record directly
-            // This depends on what properties are accessible in the ProofExchangeRecord
-            const proofRecordAny = proofRecord as any;
-            
-            if (proofRecordAny.requestMessage?.attachments?.length > 0) {
-              requestAttachment = proofRecordAny.requestMessage.attachments[0];
-            }
-            // Try to get from metadata
-            else if (proofRecordAny.metadata) {
-              const metadata = proofRecordAny.metadata;
-              if (metadata.data && metadata.data.requestMessage) {
-                requestAttachment = metadata.data.requestMessage.attachments?.[0];
-              }
-            }
-          } catch (e) {
-            console.error('Error accessing proof request message:', e);
-          }
-          
-          if (requestAttachment?.data) {
-            // Parse the proof request data
-            if (typeof requestAttachment.data === 'string') {
-              try {
-                const decodedData = Buffer.from(requestAttachment.data, 'base64').toString();
-                proofRequest = JSON.parse(decodedData);
-              } catch (e) {
-                console.error('Error decoding proof request data:', e);
-              }
-            } else if (requestAttachment.data.json) {
-              proofRequest = requestAttachment.data.json;
+        console.error('Failed to automatically select credentials:', error);
+        requestedCredentials = {
+          proofFormats: {
+            anoncreds: {
+              requested_attributes: selectedCredentials
             }
           }
-          
-          console.log('Extracted proof request:', JSON.stringify(proofRequest, null, 2));
-          
-          if (!proofRequest || !proofRequest.requested_attributes) {
-            // If we couldn't extract the proof request format, create a simple one
-            console.log('Could not extract requested attributes format, using simple format');
-            
-            // Create a simplified format - this is basically a fallback
-            const requestedAttributesMap: Record<string, any> = {};
-            const selfAttestedAttributesMap: Record<string, string> = {};
-            
-            // Process requested attributes (credentials selected from wallet)
-            if (selectedCredentials.requestedAttributes) {
-              for (const [referent, info] of Object.entries(selectedCredentials.requestedAttributes)) {
-                const credInfo = info as { credentialId: string; revealed?: boolean };
-                if (credInfo.credentialId) {
-                  requestedAttributesMap[referent] = {
-                    credential_id: credInfo.credentialId,
-                    revealed: credInfo.revealed !== false // default to true if not specified
-                  };
-                }
-              }
-            }
-            
-            // Process self-attested attributes
-            if (selectedCredentials.selfAttestedAttributes) {
-              Object.assign(selfAttestedAttributesMap, selectedCredentials.selfAttestedAttributes);
-            }
-            
-            // Build the proofFormats object
-            requestedCredentials = {
-              proofFormats: {
-                anoncreds: {
-                  requested_attributes: requestedAttributesMap,
-                  requested_predicates: {},
-                  self_attested_attributes: selfAttestedAttributesMap
-                }
-              }
-            };
-          } else {
-            // We successfully extracted the proof request format
-            // Prepare the requested credentials in the format expected by the AnonCreds proof format
-            const requestedAttributesMap: Record<string, any> = {};
-            const selfAttestedAttributesMap: Record<string, string> = {};
-            
-            // Process requested attributes (credentials selected from wallet)
-            if (selectedCredentials.requestedAttributes) {
-              for (const [referent, info] of Object.entries(selectedCredentials.requestedAttributes)) {
-                const credInfo = info as { credentialId: string; revealed?: boolean };
-                if (credInfo.credentialId) {
-                  requestedAttributesMap[referent] = {
-                    credential_id: credInfo.credentialId,
-                    revealed: credInfo.revealed !== false // default to true if not specified
-                  };
-                }
-              }
-            }
-            
-            // Process self-attested attributes
-            if (selectedCredentials.selfAttestedAttributes) {
-              Object.assign(selfAttestedAttributesMap, selectedCredentials.selfAttestedAttributes);
-            }
-            
-            // Build the proofFormats object
-            requestedCredentials = {
-              proofFormats: {
-                anoncreds: {
-                  requested_attributes: requestedAttributesMap,
-                  requested_predicates: {},
-                  self_attested_attributes: selfAttestedAttributesMap
-                }
-              }
-            };
-          }
-          
-          console.log('Constructed manual proof format:', JSON.stringify(requestedCredentials, null, 2));
-        } else {
-          // No automatic or manual credentials available
-          throw new Error('No credentials available to satisfy the proof request');
         }
       }
-      
       console.log('Final proof format for acceptRequest:', JSON.stringify(requestedCredentials, null, 2));
       console.log('Proof record:', JSON.stringify(proofRecord, null, 2));
       console.log('Proof ID:', proofId);
