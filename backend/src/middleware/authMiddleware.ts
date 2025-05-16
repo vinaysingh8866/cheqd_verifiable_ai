@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import db from '../services/dbService';
 
 // JWT secret key should be stored in environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'verifiable-ai-jwt-secret-key';
@@ -77,4 +78,41 @@ export const verifyTenant = (req: Request, res: Response, next: NextFunction): v
   }
 
   next();
+};
+
+/**
+ * Middleware to check if the user is the main agent
+ */
+export const requireMainAgent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    // Check if user exists in request
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+      return;
+    }
+
+    const { tenantId } = req.user;
+    
+    // Get user from database
+    const user = await db.getUserByTenantId(tenantId);
+    
+    if (!user || !user.is_main_agent) {
+      res.status(403).json({
+        success: false,
+        message: 'Only main agent can perform this action'
+      });
+      return;
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Main agent verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while verifying main agent status'
+    });
+  }
 }; 

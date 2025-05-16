@@ -247,68 +247,189 @@ export const getHeaders = (contentType = 'application/json'): Record<string, str
  * Make an authenticated GET request
  */
 export const apiGet = async (endpoint: string) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'GET',
-    headers: getHeaders()
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'GET',
+      headers: getHeaders(),
+      credentials: 'include'
+    });
+    
+    // For public endpoints that should work even without authentication
+    if (response.status === 401 && endpoint === '/api/dashboard/verified-ai-credentials') {
+      // Try again without auth headers for public endpoints
+      const publicResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      
+      if (publicResponse.ok) {
+        return publicResponse.json();
+      }
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    console.error(`API GET Error (${endpoint}):`, error);
+    throw error;
   }
-  
-  return response.json();
 };
 
 /**
  * Make an authenticated POST request
  */
 export const apiPost = async (endpoint: string, data: any) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(data)
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    console.error(`API POST Error (${endpoint}):`, error);
+    throw error;
   }
-  
-  return response.json();
 };
 
 /**
  * Make an authenticated PUT request
  */
 export const apiPut = async (endpoint: string, data: any) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'PUT',
-    headers: getHeaders(),
-    body: JSON.stringify(data)
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    console.error(`API PUT Error (${endpoint}):`, error);
+    throw error;
   }
-  
-  return response.json();
 };
 
 /**
  * Make an authenticated DELETE request
  */
 export const apiDelete = async (endpoint: string) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'DELETE',
-    headers: getHeaders()
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    console.error(`API DELETE Error (${endpoint}):`, error);
+    throw error;
   }
-  
-  return response.json();
+};
+
+/**
+ * Get detailed information about a credential
+ * @param credentialId The ID of the credential to get details for
+ * @param tenantId The tenant ID to use
+ * @returns The detailed credential information including additional metadata
+ */
+export const getCredentialDetails = async (credentialId: string, tenantId: string) => {
+  try {
+    const params = new URLSearchParams({
+      tenantId
+    });
+    
+    const response = await fetch(`${API_BASE_URL}/api/credentials/${credentialId}/details?${params.toString()}`, {
+      method: 'GET',
+      headers: getHeaders(),
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    console.error(`API GET Error (credential details for ${credentialId}):`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get detailed information about a credential (public version without authentication requirement)
+ * @param credentialId The ID of the credential to get details for
+ * @param tenantId The tenant ID to use
+ * @returns The detailed credential information including additional metadata
+ */
+export const getPublicCredentialDetails = async (credentialId: string, tenantId: string) => {
+  try {
+    const params = new URLSearchParams({
+      tenantId
+    });
+    
+    // Try the public endpoint first - this should work without authentication
+    const publicEndpoint = `/api/credentials/public/${credentialId}?${params.toString()}`;
+    console.log('Fetching public credential endpoint:', publicEndpoint);
+    
+    try {
+      const publicResponse = await fetch(`${API_BASE_URL}${publicEndpoint}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      
+      if (publicResponse.ok) {
+        console.log('Public credential endpoint successful');
+        return publicResponse.json();
+      } else {
+        console.log('Public endpoint returned status:', publicResponse.status);
+      }
+    } catch (err) {
+      console.error("Public endpoint failed:", err);
+    }
+    
+    // Fall back to the regular endpoint without auth headers
+    console.log('Falling back to regular endpoint without auth');
+    const response = await fetch(`${API_BASE_URL}/api/credentials/${credentialId}/details?${params.toString()}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    console.error(`API GET Error (public credential details for ${credentialId}):`, error);
+    throw error;
+  }
 }; 

@@ -43,6 +43,13 @@ export default function CredentialsPage() {
   const [schemaAttributes, setSchemaAttributes] = useState<string[]>([]);
   const [isIssuing, setIsIssuing] = useState<boolean>(false);
   const [issueSuccess, setIssueSuccess] = useState<boolean>(false);
+  
+  // New states for additional metadata
+  const [invitationUrl, setInvitationUrl] = useState<string>('');
+  const [iconUrl, setIconUrl] = useState<string>('');
+  const [homepageUrl, setHomepageUrl] = useState<string>('');
+  const [aiDescription, setAiDescription] = useState<string>('');
+  const [showAdditionalFields, setShowAdditionalFields] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCredentials = async () => {
@@ -56,6 +63,7 @@ export default function CredentialsPage() {
           tenantId
         );
         setCredentials(response.credentials || []);
+        console.log('Credentials:', response.credentials);
         setError(null);
       } catch (err: any) {
         console.error('Error fetching credentials:', err);
@@ -88,10 +96,14 @@ export default function CredentialsPage() {
   };
 
   const fetchCredentialDefinitions = async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      console.error('No tenant ID found');
+      return;
+    }
     
     try {
       const response = await credentialDefinitionApi.getAll(tenantId);
+      console.log('Credential Definitions:', response.credentialDefinitions);
       setCredentialDefinitions(response.credentialDefinitions || []);
     } catch (err: any) {
       console.error('Error fetching credential definitions:', err);
@@ -109,6 +121,13 @@ export default function CredentialsPage() {
     setAttributes({});
     setSchemaAttributes([]);
     
+    // Reset additional metadata fields
+    setInvitationUrl('');
+    setIconUrl('');
+    setHomepageUrl('');
+    setAiDescription('');
+    setShowAdditionalFields(false);
+    
     await Promise.all([
       fetchConnections(),
       fetchCredentialDefinitions()
@@ -123,6 +142,13 @@ export default function CredentialsPage() {
     setSelectedCredDefId('');
     setAttributes({});
     setSchemaAttributes([]);
+    
+    // Reset additional metadata fields
+    setInvitationUrl('');
+    setIconUrl('');
+    setHomepageUrl('');
+    setAiDescription('');
+    setShowAdditionalFields(false);
   };
 
   const handleCredDefChange = async (credDefId: string) => {
@@ -202,7 +228,11 @@ export default function CredentialsPage() {
         tenantId,
         selectedConnectionId,
         selectedCredDefId,
-        attributes
+        attributes,
+        invitationUrl || undefined,
+        iconUrl || undefined,
+        homepageUrl || undefined,
+        aiDescription || undefined
       );
       
       setIssueSuccess(true);
@@ -326,8 +356,8 @@ export default function CredentialsPage() {
                   >
                     <option value="">Select Credential Definition</option>
                     {credentialDefinitions.map((credDef) => (
-                      <option key={credDef.id} value={credDef.credentialDefinitionId}>
-                        {credDef.credentialDefinitionId}...
+                      <option key={credDef.id} value={credDef.id}>
+                        {credDef.id}...
                       </option>
                     ))}
                   </select>
@@ -353,6 +383,89 @@ export default function CredentialsPage() {
                         />
                       </div>
                     ))}
+                  </div>
+                )}
+                
+                {/* Toggle for additional metadata fields */}
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdditionalFields(!showAdditionalFields)}
+                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+                  >
+                    <span>{showAdditionalFields ? 'Hide' : 'Show'} Additional AI Information</span>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className={`h-5 w-5 ml-1 transition-transform ${showAdditionalFields ? 'transform rotate-180' : ''}`} 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Additional metadata fields */}
+                {showAdditionalFields && (
+                  <div className="space-y-4 p-4 bg-slate-50 rounded-md mb-4">
+                    <h3 className="font-medium text-gray-700 mb-2">Additional AI Information</h3>
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Invitation URL
+                      </label>
+                      <input
+                        type="url"
+                        value={invitationUrl}
+                        onChange={(e) => setInvitationUrl(e.target.value)}
+                        placeholder="https://example.com/invite"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">URL where users can access this AI system</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Icon URL
+                      </label>
+                      <input
+                        type="url"
+                        value={iconUrl}
+                        onChange={(e) => setIconUrl(e.target.value)}
+                        placeholder="https://example.com/icon.png"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">URL to an image representing this AI</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Homepage URL
+                      </label>
+                      <input
+                        type="url"
+                        value={homepageUrl}
+                        onChange={(e) => setHomepageUrl(e.target.value)}
+                        placeholder="https://example.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">URL to the AI system's homepage</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        AI Description
+                      </label>
+                      <textarea
+                        value={aiDescription}
+                        onChange={(e) => setAiDescription(e.target.value)}
+                        rows={4}
+                        placeholder="Describe the AI system's capabilities, limitations, and key features..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      ></textarea>
+                      <p className="text-xs text-gray-500 mt-1">Detailed description of the AI system</p>
+                    </div>
                   </div>
                 )}
                 

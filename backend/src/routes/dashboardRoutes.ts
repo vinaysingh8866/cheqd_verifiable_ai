@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getAgent, getMainAgent } from '../services/agentService';
+import db from '../services/dbService';
 
 const router = Router();
 
@@ -22,6 +23,68 @@ export interface DashboardStats {
     label?: string;
   };
 }
+
+/**
+ * Get all verified AI credentials issued by main agents
+ */
+router.route('/verified-ai-credentials')
+  .get(async (req: Request, res: Response) => {
+    try {
+      // Get main agent credentials only
+      const mainAgent = await db.getMainAgent();
+      
+      if (!mainAgent) {
+        res.status(200).json({
+          success: true,
+          credentials: [],
+          message: 'No main agent configured'
+        });
+        return;
+      }
+      
+      console.log('Main agent found:', mainAgent.tenant_id);
+      
+      // Get credentials issued by the main agent
+      // const issuedCredentials = await db.getIssuedCredentialsByIssuer(mainAgent.tenant_id);
+      const tenantId = mainAgent.tenant_id;
+      const agent = await getAgent({ tenantId });
+      const issuedCredentials = await agent.credentials.getAll();
+      console.log('Issued credentials by main agent (raw):', JSON.stringify(issuedCredentials));
+      console.log('Number of credentials found in database:', issuedCredentials.length);
+      
+      // Format credentials for the AI dashboard
+      const aiCredentials = issuedCredentials.map(cred => {
+        // Extract relevant information for display
+        const attributes = typeof cred.attributes === 'string' 
+          ? JSON.parse(cred.attributes) 
+          : cred.attributes;
+        
+        return {
+          id: cred.id,
+          credential_id: cred.credential_id,
+          issuer_tenant_id: cred.issuer_tenant_id,
+          credential_definition_id: cred.credential_definition_id,
+          schema_id: cred.schema_id,
+          attributes: attributes,
+          created_at: cred.created_at
+        };
+      });
+      
+      console.log('Formatted credentials for response:', JSON.stringify(aiCredentials));
+      console.log('Number of credentials after formatting:', aiCredentials.length);
+      
+      res.status(200).json({
+        success: true,
+        credentials: aiCredentials
+      });
+    } catch (error: any) {
+      console.error('Failed to get verified AI credentials:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to get verified AI credentials'
+      });
+    }
+  });
 
 /**
  * Get dashboard stats endpoint

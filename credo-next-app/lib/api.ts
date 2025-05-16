@@ -159,13 +159,24 @@ export const connectionApi = {
 export const credentialApi = {
 
   getAll: async (walletId: string, walletKey: string, tenantId?: string) => {
-    const params = new URLSearchParams({
-      walletId,
-      walletKey,
-      ...(tenantId ? { tenantId } : {})
-    });
-    
-    return fetchWithErrorHandling(`${API_BASE_URL}/api/credentials?${params.toString()}`);
+    try {
+      const params = new URLSearchParams();
+      params.append('tenantId', tenantId || '');
+      
+      const response = await fetch(`${API_BASE_URL}/api/credentials?${params.toString()}`, {
+        headers: getHeaders()
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch credentials');
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      console.error('Error in credentialApi.getAll:', error);
+      throw error;
+    }
   },
   
 
@@ -183,18 +194,61 @@ export const credentialApi = {
     tenantId: string, 
     connectionId: string, 
     credentialDefinitionId: string, 
-    attributes: Record<string, string>
+    attributes: Record<string, string>,
+    invitationUrl?: string,
+    iconUrl?: string,
+    homepageUrl?: string,
+    aiDescription?: string,
+    additionalData?: Record<string, any>
   ) => {
-    return fetchWithErrorHandling(`${API_BASE_URL}/api/credentials/issue`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        tenantId, 
-        connectionId, 
-        credentialDefinitionId, 
-        attributes 
-      })
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/credentials/issue`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          tenantId,
+          connectionId,
+          credentialDefinitionId,
+          attributes,
+          ...(invitationUrl && { invitationUrl }),
+          ...(iconUrl && { iconUrl }),
+          ...(homepageUrl && { homepageUrl }),
+          ...(aiDescription && { aiDescription }),
+          ...(additionalData && { additionalData })
+        })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to issue credential');
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      console.error('Error in credentialApi.issue:', error);
+      throw error;
+    }
+  },
+  
+  getDetails: async (credentialId: string, tenantId: string) => {
+    try {
+      const params = new URLSearchParams();
+      params.append('tenantId', tenantId);
+      
+      const response = await fetch(`${API_BASE_URL}/api/credentials/${credentialId}/details?${params.toString()}`, {
+        headers: getHeaders()
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch credential details');
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      console.error('Error in credentialApi.getDetails:', error);
+      throw error;
+    }
   }
 };
 
@@ -365,4 +419,25 @@ export const didApi = {
       body: JSON.stringify({ tenantId, method })
     });
   }
+};
+
+// Helper function to get auth headers
+const getAuthHeader = () => {
+  // In a real app, you would get the token from localStorage or a state manager
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
+// Use this in the fetch calls
+const getHeaders = (contentType = 'application/json') => {
+  const headers: Record<string, string> = {
+    'Content-Type': contentType
+  };
+  
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
 }; 

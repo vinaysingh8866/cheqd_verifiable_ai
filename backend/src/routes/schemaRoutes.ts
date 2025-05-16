@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { getAgent } from '../services/agentService';
-import { RegisterSchemaOptions } from '@credo-ts/anoncreds';
+import { requireMainAgent } from '../middleware/authMiddleware';
+import { RegisterSchemaOptions, AnonCredsSchema } from '@credo-ts/anoncreds';
 import { TypedArrayEncoder } from '@credo-ts/core';
 import { KeyType } from '@credo-ts/core';
 
@@ -13,50 +14,50 @@ const cheqdDid = 'did:cheqd:testnet:d37aba59-513d-42d3-8f9f-d1df0548b6a5'
 router.route('/')
   .get(async (req: Request, res: Response) => {
     try {
-        const { tenantId } = req.query as {
-            tenantId?: string;
-        };
+      const { tenantId } = req.query as {
+        tenantId?: string;
+      };
+      
+      if (!tenantId) {
+        res.status(400).json({ 
+          success: false, 
+          message: 'Tenant ID is required as query parameter' 
+        });
+        return;
+      }
 
-        if (!tenantId) {
-            res.status(400).json({
-                success: false,
-                message: 'Tenant ID is required as query parameter'
-            });
-            return;
-        }
+      const agent = await getAgent({ tenantId });
 
-        const agent = await getAgent({ tenantId });
-
-        const schemas = await agent.modules.anoncreds.getCreatedSchemas({});
-
-        res.status(200).json({
-            success: true,
+      const schemas = await agent.modules.anoncreds.getCreatedSchemas({});
+      
+      res.status(200).json({
+        success: true,
             schemas
-        });
+      });
     } catch (error: any) {
-        console.error('Failed to get schemas:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to get schemas'
-        });
+      console.error('Failed to get schemas:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to get schemas'
+      });
     }
   })
   .post(async (req: Request, res: Response) => {
     try {
         const { tenantId, name, version, attributes, provider = 'kanon' } = req.body;
-
-        if (!tenantId || !name || !version || !attributes) {
-            res.status(400).json({
-                success: false,
+      
+      if (!tenantId || !name || !version || !attributes) {
+        res.status(400).json({ 
+          success: false, 
                 message: 'Tenant ID, schema name, version, and attributes are required'
-            });
-            return;
-        }
+        });
+        return;
+      }
 
-        const agent = await getAgent({ tenantId });
+      const agent = await getAgent({ tenantId });
 
         
-        try {
+      try {
 
             const dids = await agent.dids.getCreatedDids({});
             
@@ -85,8 +86,8 @@ router.route('/')
                         method: "kanon",
                         network: "testnet",
                     },
-                    schema: {
-                        attrNames: attributes,
+          schema: {
+            attrNames: attributes,
                         issuerId: issuerDid,
                         name,
                         version
@@ -97,12 +98,12 @@ router.route('/')
 
                 schemaOptions = {
                     network: "testnet", // Add the missing network property
-                    options: {
+          options: {
                         network: "testnet",
                         methodSpecificIdAlgo: "uuid",
                         method: "cheqd",
                     },
-                    schema: {
+          schema: {
                         attrNames: attributes,
                         issuerId: issuerDid,
                         name,
@@ -116,8 +117,8 @@ router.route('/')
             console.log('schemaResult', schemaResult);
             
             if (schemaResult.schemaState.state !== 'finished') {
-                res.status(500).json({
-                    success: false,
+        res.status(500).json({
+          success: false,
                     message: 'Failed to register schema',
                     error: schemaResult.schemaState.reason
                 });
@@ -133,14 +134,14 @@ router.route('/')
         } catch (error) {
             console.error(`Error creating schema: ${error}`);
             throw error;
-        }
+      }
 
     } catch (error: any) {
-        console.error('Failed to create schema:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to create schema'
-        });
+      console.error('Failed to create schema:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to create schema'
+      });
     }
   });
 
@@ -210,42 +211,40 @@ router.route('/schemaId')
 router.route('/:schemaId')
   .get(async (req: Request, res: Response) => {
     try {
-        const { schemaId } = req.params;
-        console.log('schemaId', schemaId);
-        console.log('req.query', req.query);
-        const { tenantId } = req.query as {
-            tenantId?: string;
-        };
+      const { schemaId } = req.params;
+      const { tenantId } = req.query as {
+        tenantId?: string;
+      };
+      
+      if (!tenantId) {
+        res.status(400).json({ 
+          success: false, 
+          message: 'Tenant ID is required as query parameter' 
+        });
+        return;
+      }
 
-        if (!tenantId) {
-            res.status(400).json({
-                success: false,
-                message: 'Tenant ID is required as query parameter'
-            });
-            return;
-        }
-
-        const agent = await getAgent({ tenantId });
+      const agent = await getAgent({ tenantId });
         const schemas = await agent.modules.anoncreds.getCreatedSchemas({});
         const schema = schemas.find((s: any) => s.id === schemaId);
-        if (!schema) {
-            res.status(404).json({
-                success: false,
-                message: `Schema with ID ${schemaId} not found`
-            });
-            return;
-        }
-
-        res.status(200).json({
-            success: true,
+      if (!schema) {
+        res.status(404).json({
+          success: false,
+          message: `Schema with ID ${schemaId} not found`
+        });
+        return;
+      }
+      
+      res.status(200).json({
+        success: true,
             schema
-        });
+      });
     } catch (error: any) {
-        console.error(`Failed to get schema ${req.params.schemaId}:`, error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to get schema'
-        });
+      console.error(`Failed to get schema ${req.params.schemaId}:`, error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to get schema'
+      });
     }
   });
 

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getAgent } from '../services/agentService';
+import { requireMainAgent } from '../middleware/authMiddleware';
 import { AnonCredsCredentialDefinitionPrivateRecord, AnonCredsCredentialDefinitionPrivateRepository, AnonCredsCredentialDefinitionRecord, AnonCredsCredentialDefinitionRepository, AnonCredsKeyCorrectnessProofRecord, AnonCredsKeyCorrectnessProofRepository, RegisterCredentialDefinitionOptions } from '@credo-ts/anoncreds';
 
 const router = Router();
@@ -25,9 +26,17 @@ router.route('/')
       const agent = await getAgent({ tenantId });
       const credentialDefinitions = await agent.modules.anoncreds.getCreatedCredentialDefinitions({});
       
+      // Prepare response data
+      const credDefData = credentialDefinitions.map((credDef: any) => ({
+        id: credDef.credentialDefinitionId,
+        schemaId: credDef.credentialDefinition.schemaId,
+        issuerId: credDef.credentialDefinition.issuerId,
+        tag: credDef.credentialDefinition.tag
+      }));
+      
       res.status(200).json({
         success: true,
-        credentialDefinitions
+        credentialDefinitions: credDefData
       });
     } catch (error: any) {
       console.error('Failed to get credential definitions:', error);
@@ -36,26 +45,32 @@ router.route('/')
         message: error.message || 'Failed to get credential definitions'
       });
     }
-  })
-  .post(async (req: Request, res: Response) => {
+  });
+
+/**
+ * Create a new credential definition - restricted to main agent only
+ */
+router.route('/create')
+  .post(requireMainAgent, async (req: Request, res: Response) => {
     try {
-      const { tenantId, schemaId, tag, supportRevocation } = req.body;
-      console.log(req.body, "req.body");
-      if (!tenantId || !schemaId || !tag) {
+      const { tenantId, schemaId, tag } = req.body;
+      
+      if (!tenantId || !schemaId) {
         res.status(400).json({ 
           success: false, 
-          message: 'Tenant ID, schema ID, and tag are required' 
+          message: 'Tenant ID and schema ID are required' 
         });
         return;
       }
 
+      console.log(`Creating credential definition for tenant ${tenantId} with schema ${schemaId}`);
       const agent = await getAgent({ tenantId });
 
       try {
-        const schemaResult = await agent.modules.anoncreds.getCreatedSchemas({});
-        const schema = schemaResult.find((schema: { id: any; }) => schema.id === schemaId);
-        console.log(schemaResult, "schemaResult");
-        if (!schemaResult || !schema) {
+        // Get schema
+        const schema = await agent.modules.anoncreds.getSchema(schemaId);
+        
+        if (!schema) {
           res.status(404).json({
             success: false,
             message: `Schema with ID ${schemaId} not found`
@@ -63,118 +78,35 @@ router.route('/')
           return;
         }
         
-        console.log('Using schema for credential definition:', schema);
-
-        const schemaIdParts = schemaId.split(':');
-        const network = schemaIdParts.length >= 3 ? schemaIdParts[2] : 'testnet';
-
-        const options: RegisterCredentialDefinitionOptions = {
+        // Create credential definition
+        const credentialDefinitionResult = await agent.modules.anoncreds.registerCredentialDefinition({
+          credentialDefinition: {
+            issuerId: schema.schema.issuerId,
+            schemaId: schemaId,
+            tag: tag || 'default'
+          },
           options: {
-            network: network,
-            methodSpecificIdAlgo: 'uuid',
-          },
-          credentialDefinition: {
-            issuerId: schema.schema.issuerId, // Use the issuer ID from the schema
-            schemaId: schema.schemaId,
-            tag,
-            type: 'CL',
-            value: {
-              primary: {
-                name: 'primary',
-              }
-            }
-          },
-          // @ts-ignore
-          network: network,
-
-          issuerId: schema.schema.issuerId
-        };
-        
-        console.log('Registering credential definition with options:', JSON.stringify(options));
-        const isKanon = schema.schema.issuerId.includes('did:kanon');
-        let credDefResult;
-        if (isKanon) {
-          // add type and value if did:kanon 
-          credDefResult = await agent.modules.anoncreds.registerCredentialDefinition({
-            options: {
-              network: network,
-              methodSpecificIdAlgo: 'uuid',
-            },
-            credentialDefinition: {
-              issuerId: schema.schema.issuerId, // Use the issuer ID from the schema
-              schemaId: schema.schemaId,
-              tag,
-              type: 'CL',
-            }
-          });
-          console.log(credDefResult, "credDefResult");
-        }
-        else {
-          credDefResult = await agent.modules.anoncreds.registerCredentialDefinition({
-            options: {
-              network: network,
-            methodSpecificIdAlgo: 'uuid',
-          },
-          credentialDefinition: {
-            issuerId: schema.schema.issuerId, // Use the issuer ID from the schema
-            schemaId: schema.schemaId,
-            tag,
-            
+            supportRevocation: false
           }
         });
-        console.log(credDefResult, "credDefResult");
-      }
-        // await agent.context.dependencyManager.resolve(AnonCredsCredentialDefinitionRepository).save(
-        //   agent.context,
-        //   new AnonCredsCredentialDefinitionRecord({
-        //     credentialDefinition: credDefResult.credentialDefinitionState.credentialDefinition,
-        //     credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId,
-        //     methodName: 'inMemory',
-        //   })
-        // )
-        // console.log(credDefResult, "credDefResulzdfsadt");
-        // console.log(credDefResult.credentialDefinitionState.credentialDefinitionPrivate, "credDefResult.credentialDefinitionState.credentialDefinitionPrivate");
-        // console.log(credDefResult.credentialDefinitionState.keyCorrectnessProof, "credDefResult.credentialDefinitionState.keyCorrectnessProof");
-        // console.log(credDefResult.credentialDefinitionState.credentialDefinitionId, "credDefResult.credentialDefinitionState.credentialDefinitionId");
 
-        // await agent.context.dependencyManager.resolve(AnonCredsCredentialDefinitionPrivateRepository).save(
-        //   agent.context,
-        //   new AnonCredsCredentialDefinitionPrivateRecord({
-        //     value: credDefResult.credentialDefinitionState.credentialDefinitionPrivate,
-        //     credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId,
-        //   })
-        // )
-      
-        // await agent.context.dependencyManager.resolve(AnonCredsKeyCorrectnessProofRepository).save(
-        //   agent.context,
-        //   new AnonCredsKeyCorrectnessProofRecord({
-        //     value: credDefResult.credentialDefinitionState.keyCorrectnessProof,
-        //     credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId,
-        //   })
-        // )
-      
-      
-        console.log('Credential definition registered:', credDefResult);
-        
-        if (credDefResult.credentialDefinitionState.state !== 'finished') {
-          res.status(500).json({
-            success: false,
-            message: 'Failed to register credential definition',
-            error: credDefResult.credentialDefinitionState.reason
-          });
-          return;
-        }
-        
+        console.log(`Created credential definition with ID: ${credentialDefinitionResult.credentialDefinitionId}`);
+
         res.status(201).json({
           success: true,
-          message: 'Credential definition created successfully',
-          credentialDefinitionId: credDefResult.credentialDefinitionState.credentialDefinitionId
+          credentialDefinition: {
+            id: credentialDefinitionResult.credentialDefinitionId,
+            schemaId: schemaId,
+            issuerId: schema.schema.issuerId,
+            tag: tag || 'default'
+          }
         });
-      } catch (error: any) {
-        console.error('Failed to register credential definition:', error);
+      } catch (credDefError: any) {
+        console.error('Credential definition creation error:', credDefError);
+        
         res.status(500).json({
           success: false,
-          message: error.message || 'Failed to register credential definition'
+          message: `Credential definition creation error: ${credDefError.message || 'Unknown error'}`
         });
       }
     } catch (error: any) {
@@ -246,7 +178,7 @@ router.route('/:issuerId/resources/:resourceId')
   });
 
 /**
- * Get a credential definition by ID
+ * Get credential definition by ID
  */
 router.route('/:credDefId')
   .get(async (req: Request, res: Response) => {
@@ -264,17 +196,10 @@ router.route('/:credDefId')
         return;
       }
 
-      try {
       const agent = await getAgent({ tenantId });
-      const credDefs = await agent.modules.anoncreds.getCreatedCredentialDefinitions({
-        credentialDefinitionId: credDefId
-      })
-      console.log(credDefs, "credDefsAll");
-      const credDef = credDefs[0]
-
-      console.log(credDef, "credDefsdf");
+      const credentialDefinition = await agent.modules.anoncreds.getCredentialDefinition(credDefId);
       
-      if (!credDef) {
+      if (!credentialDefinition) {
         res.status(404).json({
           success: false,
           message: `Credential definition with ID ${credDefId} not found`
@@ -284,16 +209,13 @@ router.route('/:credDefId')
       
       res.status(200).json({
         success: true,
-          credentialDefinition: credDef,
-          schemaId: credDef.credentialDefinition.schemaId
-        });
-      } catch (error: any) {
-        console.error(`Failed to get credential definition ${credDefId}:`, error);
-        res.status(500).json({
-          success: false,
-          message: error.message || 'Failed to get credential definition'
+        credentialDefinition: {
+          id: credentialDefinition.credentialDefinitionId,
+          schemaId: credentialDefinition.credentialDefinition.schemaId,
+          issuerId: credentialDefinition.credentialDefinition.issuerId,
+          tag: credentialDefinition.credentialDefinition.tag
+        }
       });
-      }
     } catch (error: any) {
       console.error(`Failed to get credential definition ${req.params.credDefId}:`, error);
       res.status(500).json({
