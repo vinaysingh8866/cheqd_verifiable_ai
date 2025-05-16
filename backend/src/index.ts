@@ -1,4 +1,3 @@
-import './shim.js';
 import 'reflect-metadata';
 import express, { Request, Response } from 'express';
 import cors from 'cors';

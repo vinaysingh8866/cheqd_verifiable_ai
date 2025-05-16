@@ -1,4 +1,3 @@
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 
@@ -199,7 +198,7 @@ export async function getCredentials(walletId: string, walletKey: string, tenant
  * @returns The issued credential
  */
 export async function issueCredential(tenantId: string, data: any) {
-  return fetchAPI('/api/credentials/issue', {
+  return fetchAPI(`${API_BASE_URL}/api/credentials/issue`, {
     method: 'POST',
     body: { tenantId, ...data },
   });
@@ -212,7 +211,7 @@ export async function issueCredential(tenantId: string, data: any) {
  * @returns The verification result
  */
 export async function verifyCredential(tenantId: string, data: any) {
-  return fetchAPI('/api/credentials/verify', {
+  return fetchAPI(`${API_BASE_URL}/api/credentials/verify`, {
     method: 'POST',
     body: { tenantId, ...data },
   });
