@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const [tenantId, setTenantId] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -16,23 +17,20 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-
-      if (!tenantId.trim()) {
-        throw new Error('Tenant ID is required');
+      if (!email.trim() || !password.trim()) {
+        throw new Error('Email and password are required');
       }
-
-      await login(tenantId);
-
+      await login({ email, password });
     } catch (error: any) {
-      setError(error.message || 'Failed to login. Please check your tenant ID.');
+      setError(error.message || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
   };
 
-
-  const useTestTenant = () => {
-    setTenantId('demo-tenant-123');
+  const useTestCredentials = () => {
+    setEmail('test@example.com');
+    setPassword('password123');
   };
 
   return (
@@ -55,20 +53,37 @@ export default function LoginPage() {
         )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm">
+          <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="tenant-id" className="sr-only">
-                Tenant ID
+              <label htmlFor="email-address" className="sr-only">
+                Email address
               </label>
               <input
-                id="tenant-id"
-                name="tenant-id"
-                type="text"
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
                 required
                 className="appearance-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 focus:z-10 sm:text-sm"
-                placeholder="Tenant ID"
-                value={tenantId}
-                onChange={(e) => setTenantId(e.target.value)}
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
@@ -99,14 +114,14 @@ export default function LoginPage() {
         </form>
         
         <div className="mt-4 text-center">
-          <button onClick={useTestTenant} className="text-sm text-slate-600 hover:text-slate-800 transition-colors duration-200">
-            Use test tenant
+          <button onClick={useTestCredentials} className="text-sm text-slate-600 hover:text-slate-800 transition-colors duration-200">
+            Use test credentials
           </button>
         </div>
 
         <div className="mt-4 text-center">
           <p className="text-sm text-slate-600">
-            Don't have a tenant?{' '}
+            Don't have an account?{' '}
             <Link href="/signup" className="font-medium text-slate-700 hover:text-slate-900">
               Create one now
             </Link>

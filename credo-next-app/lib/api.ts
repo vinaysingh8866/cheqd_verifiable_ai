@@ -2,14 +2,30 @@
  * API client for communicating with the Express backend
  */
 
-
 const API_BASE_URL = 'http://147.182.218.241:3002';
+
+/**
+ * Get the JWT token from local storage
+ */
+const getToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+};
 
 /**
  * Generic fetch wrapper with error handling
  */
 async function fetchWithErrorHandling(url: string, options: RequestInit = {}) {
   try {
+    // Add authorization header if token exists
+    const token = getToken();
+    if (token) {
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+      };
+    }
+    
     const response = await fetch(url, options);
     const data = await response.json();
     
@@ -28,21 +44,26 @@ async function fetchWithErrorHandling(url: string, options: RequestInit = {}) {
  * Auth API functions
  */
 export const authApi = {
-
-  register: async (label: string) => {
+  register: async (label: string, email: string, password: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label })
+      body: JSON.stringify({ label, email, password })
     });
   },
   
-
-  login: async (tenantId: string) => {
+  login: async (credentials: { email: string, password: string }) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenantId })
+      body: JSON.stringify(credentials)
+    });
+  },
+  
+  verify: async () => {
+    return fetchWithErrorHandling(`${API_BASE_URL}/api/auth/verify`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 };
@@ -73,7 +94,6 @@ export const agentApi = {
     });
   },
   
-
   validate: async (walletId: string, walletKey: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/agent/validate`, {
       method: 'POST',
@@ -82,7 +102,6 @@ export const agentApi = {
     });
   },
   
-
   createTenant: async (walletId: string, walletKey: string, label: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/agent/tenant`, {
       method: 'POST',
@@ -107,7 +126,6 @@ export const connectionApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections?${params.toString()}`);
   },
   
-
   getById: async (connectionId: string, walletId: string, walletKey: string, tenantId?: string) => {
     const params = new URLSearchParams({
       walletId,
@@ -118,7 +136,6 @@ export const connectionApi = {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections/${connectionId}?${params.toString()}`);
   },
   
-
   createInvitation: async (walletId: string, walletKey: string, tenantId?: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections/invitation`, {
       method: 'POST',
@@ -127,7 +144,6 @@ export const connectionApi = {
     });
   },
   
-
   receiveInvitation: async (walletId: string, walletKey: string, invitationUrl: string, tenantId?: string) => {
     return fetchWithErrorHandling(`${API_BASE_URL}/api/connections/receive-invitation`, {
       method: 'POST',

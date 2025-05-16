@@ -215,4 +215,100 @@ export async function verifyCredential(tenantId: string, data: any) {
     method: 'POST',
     body: { tenantId, ...data },
   });
-} 
+}
+
+// API utility functions for making authenticated requests
+
+/**
+ * Get the JWT token from local storage
+ */
+export const getToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+};
+
+/**
+ * Get the request headers with JWT token if available
+ */
+export const getHeaders = (contentType = 'application/json'): Record<string, string> => {
+  const headers: Record<string, string> = {
+    'Content-Type': contentType
+  };
+  
+  const token = getToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
+
+/**
+ * Make an authenticated GET request
+ */
+export const apiGet = async (endpoint: string) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'GET',
+    headers: getHeaders()
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  }
+  
+  return response.json();
+};
+
+/**
+ * Make an authenticated POST request
+ */
+export const apiPost = async (endpoint: string, data: any) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(data)
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  }
+  
+  return response.json();
+};
+
+/**
+ * Make an authenticated PUT request
+ */
+export const apiPut = async (endpoint: string, data: any) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(data)
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  }
+  
+  return response.json();
+};
+
+/**
+ * Make an authenticated DELETE request
+ */
+export const apiDelete = async (endpoint: string) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error?.message || `Request failed with status ${response.status}`);
+  }
+  
+  return response.json();
+}; 

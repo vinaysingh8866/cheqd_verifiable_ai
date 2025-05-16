@@ -4,6 +4,7 @@ import React, { ReactNode, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -19,8 +20,12 @@ const navItems = [
   { href: '/credential-definitions', label: 'Credential Defs' },
 ];
 
+// Get environment variables with defaults
+const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || 'Verifiable AI';
+const COMPANY_LOGO_URL = process.env.NEXT_PUBLIC_COMPANY_LOGO_URL || '/logo.png';
+
 export default function ClientLayout({ children }: ClientLayoutProps) {
-  const { isAuthenticated, isLoading, logout, tenantId } = useAuth();
+  const { isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   
@@ -65,9 +70,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <div className="flex h-screen bg-slate-50">
         {/* Sidebar */}
         <aside className="w-64 bg-slate-800 text-white flex flex-col">
-          <div className="p-4 text-xl font-semibold border-b border-slate-700 bg-slate-900">
-            Credo Tenant
-            {tenantId && <span className='block text-xs font-normal text-slate-400 truncate'>ID: {tenantId}</span>}
+          <div className="p-4 text-xl font-semibold border-b border-slate-700 bg-slate-900 flex items-center">
+            {COMPANY_LOGO_URL && (
+              <div className="w-8 h-8 mr-3 rounded overflow-hidden flex-shrink-0">
+                <Image
+                  src={COMPANY_LOGO_URL}
+                  alt={COMPANY_NAME}
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                  style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                />
+              </div>
+            )}
+            <span>{COMPANY_NAME}</span>
           </div>
           <nav className="flex-1 mt-4">
             <ul>

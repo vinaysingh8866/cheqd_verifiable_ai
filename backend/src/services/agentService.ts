@@ -32,9 +32,20 @@ const agentEndpoint = process.env.AGENT_ENDPOINT || `http://147.182.218.241:${ag
 const ethereumRpcUrl = process.env.ETHEREUM_RPC_URL || "http://127.0.0.1:8545/";
 const ethereumPrivateKey = process.env.ETHEREUM_PRIVATE_KEY || "";
 
+// Increased session timeout (from default 1000ms to 5000ms)
+const AGENT_SESSION_TIMEOUT = process.env.AGENT_SESSION_TIMEOUT ? parseInt(process.env.AGENT_SESSION_TIMEOUT) : 5000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
+
 let mainAgent: Agent | null = null;
 
-const tenantAgentCache: Record<string, Agent> = {};
+interface Tenant {
+    id: string;
+    tenantId: string;
+    config: any;
+}
+
+const tenantAgentCache: Record<string, Agent<any>> = {};
 
 const cosmosPayerSeed = process.env.COSMOS_PAYER_SEED || 'rack finger orange small grab regular shy oyster spread history mechanic shock';
 
@@ -66,7 +77,9 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
             config,
             dependencies: agentDependencies,
             modules: {
-                tenants: new TenantsModule(),
+                tenants: new TenantsModule({
+                    sessionAcquireTimeout: AGENT_SESSION_TIMEOUT
+                }),
                 askar: new AskarModule({
                     ariesAskar: ariesAskar,
                     // Database per wallet
@@ -133,6 +146,21 @@ async function initializeAgent(walletId: string, walletKey: string, multiWalletD
     }
 }
 
+// Helper function to implement retries with exponential backoff
+async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES, delay = RETRY_DELAY): Promise<T> {
+    try {
+        return await fn();
+    } catch (error: any) {
+        if (retries <= 0 || !error.message?.includes('Failed to acquire an agent context session')) {
+            throw error;
+        }
+        
+        console.log(`Operation failed, retrying in ${delay}ms (${retries} retries left): ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return withRetry(fn, retries - 1, delay * 1.5); // Exponential backoff
+    }
+}
+
 /**
  * Get or create an agent for a wallet ID
  */
@@ -140,9 +168,9 @@ export async function getAgent({
     tenantId
 }: {
     tenantId?: string
-}): Promise<Agent> {
+}): Promise<Agent<any>> {
     console.log(`Getting agent for tenant: ${tenantId}`);
-    console.log(`Main agent: ${mainAgent}`);
+    
     if (!tenantId) {
         throw new Error('Tenant ID is required');
     }
@@ -151,14 +179,14 @@ export async function getAgent({
         console.log(`Using cached tenant agent for tenant: ${tenantId}`);
         return tenantAgentCache[tenantId];
     }
+    
     if (mainAgent) {
         console.log(`Using existing main agent for tenant: ${tenantId}`);
 
         try {
-            const tenantAgent = await mainAgent.modules.tenants.getTenantAgent({
+            const tenantAgent = await withRetry(() => mainAgent!.modules.tenants.getTenantAgent({
                 tenantId
-            });
-
+            })) as Agent<any>;
 
             tenantAgentCache[tenantId] = tenantAgent;
             console.log(`Cached tenant agent for tenant: ${tenantId}`);
@@ -177,9 +205,9 @@ export async function getAgent({
 
         const agent = await initializeAgent(walletId, walletKey);
 
-        const tenantAgent = await agent.modules.tenants.getTenantAgent({
+        const tenantAgent = await withRetry(() => agent.modules.tenants.getTenantAgent({
             tenantId
-        });
+        })) as Agent<any>;
 
         tenantAgentCache[tenantId] = tenantAgent;
         console.log(`Cached tenant agent for tenant: ${tenantId}`);
@@ -193,9 +221,9 @@ export async function getAgent({
 
             const agent = await initializeAgent(walletId, walletKey);
 
-            const tenantAgent = await agent.modules.tenants.getTenantAgent({
+            const tenantAgent = await withRetry(() => agent.modules.tenants.getTenantAgent({
                 tenantId
-            });
+            })) as Agent<any>;
 
             tenantAgentCache[tenantId] = tenantAgent;
             console.log(`Cached tenant agent for tenant: ${tenantId}`);
@@ -221,7 +249,7 @@ export async function getMainAgent(): Promise<Agent> {
 /**
  * Create a tenant for an agent
  */
-export async function createTenant(config: { label: string }): Promise<any> {
+export async function createTenant(config: { label: string }): Promise<Tenant> {
     if (!mainAgent || !mainAgent.isInitialized) {
         console.log(`Initializing main agent for tenant creation`);
 
@@ -235,9 +263,7 @@ export async function createTenant(config: { label: string }): Promise<any> {
         throw new Error('Failed to initialize main agent');
     }
 
-    const tenant = await mainAgent.modules.tenants.createTenant({ config });
-
-
+    const tenant = await withRetry(() => mainAgent!.modules.tenants.createTenant({ config })) as Tenant;
 
     if (tenant && tenant.tenantId && tenantAgentCache[tenant.tenantId]) {
         delete tenantAgentCache[tenant.tenantId];

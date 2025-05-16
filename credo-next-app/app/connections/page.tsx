@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getConnections, createInvitation, receiveInvitation, sendMessage, getMessages } from '../utils/api';
+import { apiGet, apiPost, getHeaders } from '../utils/api';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -73,7 +73,7 @@ interface MessagesResponse {
 }
 
 export default function ConnectionsPage() {
-  const { tenantId } = useAuth();
+  const { tenantId, token } = useAuth();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +109,10 @@ export default function ConnectionsPage() {
       setError(null);
       
       try {
-        const response = await getConnections(tenantId) as ConnectionsResponse;
+        // Use authenticated API request
+        const params = new URLSearchParams({ tenantId }).toString();
+        const response = await apiGet(`/api/connections?${params}`) as ConnectionsResponse;
+        
         if (response.success) {
           const allConnections = [
             ...(response.connections || []),
@@ -134,7 +137,7 @@ export default function ConnectionsPage() {
     const intervalId = setInterval(fetchConnections, 30000);
     
     return () => clearInterval(intervalId);
-  }, [tenantId, walletId, walletKey]);
+  }, [tenantId, token]);
 
 
   const handleCreateInvitation = async () => {
@@ -144,7 +147,13 @@ export default function ConnectionsPage() {
     setError(null);
     
     try {
-      const response = await createInvitation(tenantId, walletId, walletKey) as InvitationResponse;
+      // Use authenticated API request
+      const response = await apiPost('/api/connections/invitation', {
+        tenantId,
+        walletId,
+        walletKey
+      }) as InvitationResponse;
+      
       if (response.success && response.invitation) {
         console.log('Created invitation:', response.invitation);
         setInvitation(response.invitation);
@@ -198,15 +207,24 @@ export default function ConnectionsPage() {
     setAcceptSuccess(null);
     
     try {
-      const response = await receiveInvitation(invitationUrl, walletId, walletKey, tenantId) as ReceiveInvitationResponse;
+      // Use authenticated API request
+      const response = await apiPost('/api/connections/receive-invitation', {
+        invitationUrl,
+        walletId,
+        walletKey,
+        tenantId
+      }) as ReceiveInvitationResponse;
+      
       console.log('Accepted invitation:', response);
       
       if (response.success && response.connection) {
         setAcceptSuccess(`Successfully accepted invitation from ${response.connection.theirLabel || 'unknown'}`);
         setInvitationUrl('');
         
-
-        const connectionsResponse = await getConnections(tenantId) as ConnectionsResponse;
+        // Use authenticated API request
+        const params = new URLSearchParams({ tenantId }).toString();
+        const connectionsResponse = await apiGet(`/api/connections?${params}`) as ConnectionsResponse;
+        
         if (connectionsResponse.success) {
           const allConnections = [
             ...(connectionsResponse.connections || []),
@@ -242,7 +260,9 @@ export default function ConnectionsPage() {
     setIsLoadingMessages(true);
     
     try {
-      const response = await getMessages(connection.id, tenantId) as MessagesResponse;
+      // Use authenticated API request
+      const params = new URLSearchParams({ tenantId }).toString();
+      const response = await apiGet(`/api/connections/messages/${connection.id}?${params}`) as MessagesResponse;
       
       if (response.success) {
 
@@ -270,11 +290,18 @@ export default function ConnectionsPage() {
     setIsSendingMessage(true);
     
     try {
-      const response = await sendMessage(selectedConnection.id, newMessage, tenantId) as { success: boolean; message?: string };
+      // Use authenticated API request
+      const response = await apiPost('/api/connections/message', {
+        connectionId: selectedConnection.id,
+        message: newMessage,
+        tenantId
+      }) as { success: boolean; message?: string };
       
       if (response.success) {
-
-        const messagesResponse = await getMessages(selectedConnection.id, tenantId) as MessagesResponse;
+        // Use authenticated API request
+        const params = new URLSearchParams({ tenantId }).toString();
+        const messagesResponse = await apiGet(`/api/connections/messages/${selectedConnection.id}?${params}`) as MessagesResponse;
+        
         if (messagesResponse.success) {
 
           const sortedMessages = [...(messagesResponse.messages || [])].sort((a, b) => {

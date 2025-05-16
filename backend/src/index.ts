@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { initializeAgentSystem } from './services/agentService';
@@ -12,6 +12,8 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import authRoutes from './routes/authRoutes';
 import didRoutes from './routes/didRoutes';
 import proofRoutes from './routes/proofRoutes';
+import { auth } from './middleware/authMiddleware';
+import cookieParser from 'cookie-parser';
 
 
 dotenv.config();
@@ -40,6 +42,7 @@ app.options('*', cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser()); // Add cookie parser
 
 
 app.get('/health', (req: Request, res: Response) => {
@@ -52,14 +55,32 @@ app.get('/git.new/:repoPath', (req: Request, res: Response) => {
 });
 
 
-app.use('/api/agent', agentRoutes);
-app.use('/api/connections', connectionRoutes);
-app.use('/api/credentials', credentialRoutes);
-app.use('/api/schemas', schemaRoutes);
-app.use('/api/credential-definitions', credentialDefinitionRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+// Public routes
 app.use('/api/auth', authRoutes);
+
+// Protected routes with auth middleware
+app.use('/api/agent', auth);
+app.use('/api/agent', agentRoutes);
+
+app.use('/api/connections', auth);
+app.use('/api/connections', connectionRoutes);
+
+app.use('/api/credentials', auth);
+app.use('/api/credentials', credentialRoutes);
+
+app.use('/api/schemas', auth);
+app.use('/api/schemas', schemaRoutes);
+
+app.use('/api/credential-definitions', auth);
+app.use('/api/credential-definitions', credentialDefinitionRoutes);
+
+app.use('/api/dashboard', auth);
+app.use('/api/dashboard', dashboardRoutes);
+
+app.use('/api/dids', auth);
 app.use('/api/dids', didRoutes);
+
+app.use('/api/proofs', auth);
 app.use('/api/proofs', proofRoutes);
 
 

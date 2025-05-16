@@ -37,10 +37,11 @@ router.route('/')
       console.log(`Invitations: ${JSON.stringify(invitations)}`);
       const connections = await agent.connections.getAll();
       console.log(`Connections: ${JSON.stringify(connections)}`);
-      
+      // remove if State is done
+      const filteredInvitations = invitations.filter((invitation: any) => invitation.state !== 'done');
       res.status(200).json({
         success: true,
-        invitations: invitations.map((invitation: any) => ({
+        invitations: filteredInvitations.map((invitation: any) => ({
           id: invitation.id,
           createdAt: invitation.createdAt,
           state: invitation.state,

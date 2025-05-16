@@ -4,6 +4,10 @@ const nextConfig = {
   experimental: {
 
   },
+  env: {
+    NEXT_PUBLIC_COMPANY_NAME: process.env.NEXT_PUBLIC_COMPANY_NAME || 'Verifiable AI',
+    NEXT_PUBLIC_COMPANY_LOGO_URL: process.env.NEXT_PUBLIC_COMPANY_LOGO_URL || '/logo.png',
+  },
   serverExternalPackages: [
     "@hyperledger/aries-askar-nodejs",
     "@hyperledger/anoncreds-nodejs",

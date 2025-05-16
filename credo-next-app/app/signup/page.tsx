@@ -7,16 +7,17 @@ import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
   const [label, setLabel] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [registeredTenantId, setRegisteredTenantId] = useState<string | null>(null);
-  const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-  const { register, login } = useAuth();
+  const [tenantId, setTenantId] = useState('');
+  const [isRegistered, setIsRegistered] = useState(false);
+  const { register } = useAuth();
   const router = useRouter();
 
-
   const [debugInfo, setDebugInfo] = useState<any>(null);
-
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -37,63 +38,52 @@ export default function SignupPage() {
     setDebugInfo(null);
 
     try {
-
-      if (!label.trim()) {
-        throw new Error('Tenant label is required');
+      // Basic validation
+      if (!label.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+        throw new Error('All fields are required');
       }
 
+      if (password !== confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
 
-      console.log('Creating tenant, please wait...');
-      
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
 
-      const tenantId = await register(label, false);
-      console.log(`Tenant created successfully with ID: ${tenantId}`);
-      
+      // Password strength validation
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
 
-      setDebugInfo({
-        receivedTenantId: tenantId,
-        timestamp: new Date().toISOString()
+      // Register the tenant with label, email and password
+      const newTenantId = await register({
+        label,
+        email,
+        password
       });
       
-
-      if (!tenantId) {
-        throw new Error('Registration completed but no tenant ID was returned');
-      }
-
-
-      setRegisteredTenantId(tenantId);
+      // Save the tenant ID to display
+      setTenantId(newTenantId);
+      setIsRegistered(true);
       
-
-      console.log(`Set registeredTenantId to: ${tenantId}`);
     } catch (error: any) {
-      console.error('Error creating tenant:', error);
-      setError(error.message || 'Failed to create tenant. Please try again.');
+      setError(error.message || 'Failed to register tenant. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCopyToClipboard = () => {
-    if (registeredTenantId) {
-      navigator.clipboard.writeText(registeredTenantId)
-        .then(() => {
-          setCopiedToClipboard(true);
-          setTimeout(() => setCopiedToClipboard(false), 3000); // Reset after 3 seconds
-        })
-        .catch(err => {
-          console.error('Failed to copy: ', err);
-          setError('Failed to copy to clipboard. Please try again or copy manually.');
-        });
-    }
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(tenantId);
+    alert('Tenant ID copied to clipboard!');
   };
 
-  const handleProceedToLogin = () => {
-    if (registeredTenantId) {
-      setIsLoading(true);
-      login(registeredTenantId);
-    }
+  const goToLogin = () => {
+    router.push('/login');
   };
-
 
   const DebugInfo = () => {
     if (!debugInfo) return null;
@@ -108,99 +98,72 @@ export default function SignupPage() {
     );
   };
 
-
-  if (!registeredTenantId) {
+  if (isRegistered) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg">
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-bold text-slate-700">Create new tenant</h2>
+            <svg 
+              className="mx-auto h-12 w-12 text-green-500" 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M5 13l4 4L19 7" 
+              />
+            </svg>
+            <h2 className="mt-6 text-3xl font-bold text-slate-700">Registration Successful!</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Or{' '}
-              <Link href="/login" className="font-medium text-slate-700 hover:text-slate-900">
-                sign in to an existing tenant
-              </Link>
+              Your wallet has been created. Make sure to save your tenant ID.
             </p>
           </div>
           
-          {error && (
-            <div className="bg-rose-50 border-l-4 border-rose-700 p-4 mb-4">
-              <p className="text-rose-700">{error}</p>
-            </div>
-          )}
-          
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="rounded-md shadow-sm">
-              <div>
-                <label htmlFor="tenant-label" className="block text-sm font-medium text-slate-700 mb-1">
-                  Tenant Label
-                </label>
-                <input
-                  id="tenant-label"
-                  name="tenant-label"
-                  type="text"
-                  required
-                  className="appearance-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 focus:z-10 sm:text-sm"
-                  placeholder="My Organization"
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  disabled={isLoading}
-                />
-                <p className="mt-1 text-xs text-slate-500">This label will identify your tenant in the system</p>
-              </div>
-            </div>
-
-            <div>
+          <div className="mt-8">
+            <div className="flex items-center justify-between p-4 bg-slate-100 rounded-md">
+              <span className="text-sm font-medium text-slate-700 break-all">{tenantId}</span>
               <button
-                type="submit"
-                disabled={isLoading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  isLoading ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-700 hover:bg-slate-800'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors duration-200`}
+                onClick={copyToClipboard}
+                className="ml-2 p-2 text-slate-500 hover:text-slate-700 transition-colors duration-200"
+                title="Copy to clipboard"
               >
-                {isLoading ? (
-                  <>
-                    <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                      <svg className="animate-spin h-5 w-5 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                    </span>
-                    Creating Tenant...
-                  </>
-                ) : (
-                  'Create Tenant'
-                )}
               </button>
             </div>
-            
-            {isLoading && (
-              <div className="text-center text-sm text-slate-600 animate-pulse">
-                <p>Creating your tenant environment...</p>
-                <p className="text-xs mt-1">This may take a few seconds</p>
+            <p className="mt-2 text-xs text-slate-500">
+              This is your unique tenant ID. You'll need it to log in if you ever lose your session.
+            </p>
               </div>
-            )}
-          </form>
           
-          <DebugInfo />
+          <div className="mt-8">
+            <button
+              onClick={goToLogin}
+              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors duration-200"
+            >
+              Go to Login
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg">
         <div className="text-center">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-            <svg className="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="mt-3 text-xl font-semibold text-slate-700">Tenant Created Successfully!</h2>
+          <h2 className="mt-6 text-3xl font-bold text-slate-700">Create a new wallet</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Please save your tenant ID. You'll need it to log in to your environment.
+            Already have a wallet?{' '}
+            <Link href="/login" className="font-medium text-slate-700 hover:text-slate-900">
+              Sign in
+            </Link>
           </p>
         </div>
         
@@ -210,59 +173,102 @@ export default function SignupPage() {
           </div>
         )}
         
-        <div className="mt-4">
-          <div className="bg-slate-50 p-4 rounded-md border border-slate-200">
-            <div className="flex justify-between items-center mb-1">
-              <p className="text-xs text-slate-500">Your Tenant ID:</p>
-              <span className={`text-xs px-2 py-0.5 rounded ${copiedToClipboard ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-700'}`}>
-                {copiedToClipboard ? 'Copied!' : 'Click button below to copy'}
-              </span>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm space-y-4">
+            <div>
+              <label htmlFor="wallet-label" className="block text-sm font-medium text-slate-700 mb-1">
+                Wallet Label
+              </label>
+              <input
+                id="wallet-label"
+                name="label"
+                type="text"
+                required
+                className="appearance-none block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+                placeholder="Enter a name for your wallet"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-slate-500">This name will be used to identify your wallet.</p>
             </div>
-            <p className="font-mono text-sm break-all bg-white p-2 border border-slate-200 rounded">{registeredTenantId}</p>
-            <p className="mt-2 text-xs text-amber-600">
-              <svg className="inline-block h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Important: Store this ID securely. You cannot recover it if lost.
-            </p>
+            
+            <div>
+              <label htmlFor="email-address" className="block text-sm font-medium text-slate-700 mb-1">
+                Email Address
+              </label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
           </div>
           
-          <div className="mt-4 flex flex-col gap-3">
-            <button
-              onClick={handleCopyToClipboard}
-              className="w-full flex justify-center py-2 px-4 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-            >
-              <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-              {copiedToClipboard ? 'Copied to Clipboard!' : 'Copy to Clipboard'}
-            </button>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="appearance-none block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-slate-500">Password must be at least 6 characters long.</p>
+            </div>
             
+            <div>
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 mb-1">
+                Confirm Password
+              </label>
+              <input
+                id="confirm-password"
+                name="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="appearance-none block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
             <button
-              onClick={handleProceedToLogin}
+              type="submit"
               disabled={isLoading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
                 isLoading ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-700 hover:bg-slate-800'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500`}
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors duration-200`}
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                    <svg className="animate-spin h-5 w-5 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Logging in...
+                  </span>
+                  Creating wallet...
                 </>
               ) : (
-                "I've Saved It, Proceed to Login"
+                'Create wallet'
               )}
             </button>
-            
-            <Link href="/login" className="text-center text-sm text-slate-600 hover:text-slate-900 mt-2">
-              I'll Login Later
-            </Link>
           </div>
-        </div>
+        </form>
         
         <DebugInfo />
       </div>

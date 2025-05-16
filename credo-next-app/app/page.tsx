@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './context/AuthContext';
-import { fetchDashboardStats, DashboardStats } from './utils/api';
+import { apiPost, DashboardStats } from './utils/api';
 import CreateInvitation from './components/CreateInvitation';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { tenantId } = useAuth();
+  const { tenantId, token } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export default function DashboardPage() {
       setError(null);
       
       try {
-        const data = await fetchDashboardStats(tenantId);
+        const data = await apiPost('/api/dashboard/stats', { tenantId });
         setStats(data);
       } catch (err: any) {
         console.error('Error fetching dashboard stats:', err);
@@ -33,11 +33,10 @@ export default function DashboardPage() {
     
     getStats();
     
-
     const intervalId = setInterval(getStats, 60000);
     
     return () => clearInterval(intervalId);
-  }, [tenantId]);
+  }, [tenantId, token]);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -98,38 +97,8 @@ export default function DashboardPage() {
           )}
         </div>
         
-        <div className="bg-white p-5 rounded-lg shadow border-l-4 border-amber-700">
-          <h3 className="font-semibold text-slate-600">Pending Invitations</h3>
-          {isLoading ? (
-            <div className="animate-pulse h-8 bg-slate-200 rounded mt-2"></div>
-          ) : (
-            <p className="text-2xl font-bold text-amber-700">{stats?.invitations.pending || 0}</p>
-          )}
-        </div>
       </div>
       
-      {/* <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <div className="mb-2">
-          <h2 className="text-xl font-semibold text-slate-700 mb-4">Quick Actions</h2>
-          <div className="flex flex-wrap gap-4">
-            <button 
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition duration-150 shadow-md"
-              onClick={() => setShowInvitationPanel(!showInvitationPanel)}
-            >
-              {showInvitationPanel ? 'Hide Invitation Panel' : 'Create Invitation'}
-            </button>
-            <Link href="/connections" className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition duration-150 shadow-md">
-              View Connections
-            </Link>
-            <button className="px-4 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition duration-150 shadow-md">
-              Issue Credential
-            </button>
-            <button className="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 transition duration-150 shadow-md">
-              Verify Credential
-            </button>
-          </div>
-        </div>
-      </div> */}
       
       {showInvitationPanel && tenantId && (
         <CreateInvitation tenantId={tenantId} />
