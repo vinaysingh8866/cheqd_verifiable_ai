@@ -3529,7 +3529,7 @@ __metadata:
     events: ^3.3.0
     jsonwebtoken: ^9.0.2
     next: 15.3.1
-    next-auth: ^4.24.11
+    next-auth: ^4.24.12
     postcss: 8.4.31
     process: ^0.11.10
     qrcode.react: ^4.2.0
@@ -5773,9 +5773,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-auth@npm:^4.24.11":
-  version: 4.24.11
-  resolution: "next-auth@npm:4.24.11"
+"next-auth@npm:^4.24.12":
+  version: 4.24.12
+  resolution: "next-auth@npm:4.24.12"
   dependencies:
     "@babel/runtime": ^7.20.13
     "@panva/hkdf": ^1.0.2
@@ -5788,8 +5788,8 @@ __metadata:
     uuid: ^8.3.2
   peerDependencies:
     "@auth/core": 0.34.2
-    next: ^12.2.5 || ^13 || ^14 || ^15
-    nodemailer: ^6.6.5
+    next: ^12.2.5 || ^13 || ^14 || ^15 || ^16
+    nodemailer: ^7.0.7
     react: ^17.0.2 || ^18 || ^19
     react-dom: ^17.0.2 || ^18 || ^19
   peerDependenciesMeta:
@@ -5797,7 +5797,7 @@ __metadata:
       optional: true
     nodemailer:
       optional: true
-  checksum: f599366ac8c43b9973bd5fbb4e73cab3ad7f583dd5b2c54cf5c6b5219459117262b0a2012dc3234ef1240de9134a04854abbbccc8bca58fcc48aae45ef347bba
+  checksum: 50e8ddef4ee7ab2fdd071ac9ab4260f5a3ee83b8c63e402edca201d51c8dc118bd3ffe6c5c2f6a013867cd99c901eb4002a15bfbfa634c21db29de62f6af3a77
   languageName: node
   linkType: hard
 
@@ -7703,11 +7703,11 @@ __metadata:
 
 "typescript@patch:typescript@^5#~builtin<compat/typescript>":
   version: 5.8.3
-  resolution: "typescript@patch:typescript@npm%3A5.8.3#~builtin<compat/typescript>::version=5.8.3&hash=ad5954"
+  resolution: "typescript@patch:typescript@npm%3A5.8.3#~builtin<compat/typescript>::version=5.8.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 1b503525a88ff0ff5952e95870971c4fb2118c17364d60302c21935dedcd6c37e6a0a692f350892bafcef6f4a16d09073fe461158547978d2f16fbe4cb18581c
+  checksum: f1743b6850976b3debf7cbd53d2bc0b67e75d47eb6410db564c8bb475e92a8a48f8a3fcd14d89cf93426835281c31a8f8a94dad90be4dc899279a898532ba97f
   languageName: node
   linkType: hard
 
