@@ -22,7 +22,7 @@
     "@hyperledger/anoncreds-shared": "^0.3.1",
     "@hyperledger/aries-askar-nodejs": "^0.2.3",
     "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.0",
+    "body-parser": "^2.2.1",
     "buffer": "^6.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
