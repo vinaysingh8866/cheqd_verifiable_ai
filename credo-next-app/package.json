@@ -9,12 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@credo-ts/anoncreds": "0.5.14",
-    "@credo-ts/askar": "0.5.14",
-    "@credo-ts/cheqd": "0.5.14",
-    "@credo-ts/core": "0.5.14",
-    "@credo-ts/didcomm": "^0.6.0-pr-2209-20250321171013",
-    "@credo-ts/node": "0.5.14",
+    "@credo-ts/anoncreds": "0.6.1",
+    "@credo-ts/askar": "0.6.1",
+    "@credo-ts/cheqd": "0.6.1",
+    "@credo-ts/core": "0.6.1",
+    "@credo-ts/didcomm": "^0.6.1",
+    "@credo-ts/node": "0.6.1",
     "@credo-ts/tenants": "0.5.14",
     "@headlessui/react": "^2.2.2",
     "@hyperledger/anoncreds-nodejs": "^0.2.2",
